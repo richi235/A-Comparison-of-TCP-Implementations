@@ -1,0 +1,1276 @@
+pbuf.h:205:#if LWIP_TCP && TCP_QUEUE_OOSEQ && NO_SYS && PBUF_POOL_FREE_OOSEQ
+pbuf.h:206:extern volatile u8_t pbuf_free_ooseq_pending;
+pbuf.h:207:void pbuf_free_ooseq(void);
+pbuf.h:208:/** When not using sys_check_timeouts(), call PBUF_CHECK_FREE_OOSEQ()
+pbuf.h:209:    at regular intervals from main level to check if ooseq pbufs need to be
+pbuf.h:210:    freed! */
+pbuf.h:211:#define PBUF_CHECK_FREE_OOSEQ() do { if(pbuf_free_ooseq_pending) { \
+pbuf.h:212:  /* pbuf_alloc() reported PBUF_POOL to be empty -> try to free some \
+pbuf.h:213:     ooseq queued pbufs now */ \
+pbuf.h:214:  pbuf_free_ooseq(); }}while(0)
+pbuf.h:215:#else /* LWIP_TCP && TCP_QUEUE_OOSEQ && NO_SYS && PBUF_POOL_FREE_OOSEQ */
+pbuf.h:216:  /* Otherwise declare an empty PBUF_CHECK_FREE_OOSEQ */
+pbuf.h:217:  #define PBUF_CHECK_FREE_OOSEQ()
+pbuf.h:218:#endif /* LWIP_TCP && TCP_QUEUE_OOSEQ && NO_SYS && PBUF_POOL_FREE_OOSEQ*/
+pbuf.h:219:
+pbuf.h:220:/* Initializes the pbuf module. This call is empty for now, but may not be in future. */
+pbuf.h:221:#define pbuf_init()
+pbuf.h:222:
+pbuf.h:223:struct pbuf *pbuf_alloc(pbuf_layer l, u16_t length, pbuf_type type);
+pbuf.h:224:#if LWIP_SUPPORT_CUSTOM_PBUF
+pbuf.h:225:struct pbuf *pbuf_alloced_custom(pbuf_layer l, u16_t length, pbuf_type type,
+pbuf.h:226:                                 struct pbuf_custom *p, void *payload_mem,
+pbuf.h:227:                                 u16_t payload_mem_len);
+pbuf.h:228:#endif /* LWIP_SUPPORT_CUSTOM_PBUF */
+pbuf.h:229:void pbuf_realloc(struct pbuf *p, u16_t size);
+pbuf.h:230:u8_t pbuf_header(struct pbuf *p, s16_t header_size);
+pbuf.h:231:u8_t pbuf_header_force(struct pbuf *p, s16_t header_size);
+pbuf.h:232:void pbuf_ref(struct pbuf *p);
+pbuf.h:233:u8_t pbuf_free(struct pbuf *p);
+pbuf.h:234:u16_t pbuf_clen(const struct pbuf *p);
+pbuf.h:235:void pbuf_cat(struct pbuf *head, struct pbuf *tail);
+pbuf.h:236:void pbuf_chain(struct pbuf *head, struct pbuf *tail);
+pbuf.h:237:struct pbuf *pbuf_dechain(struct pbuf *p);
+pbuf.h:238:err_t pbuf_copy(struct pbuf *p_to, const struct pbuf *p_from);
+pbuf.h:239:u16_t pbuf_copy_partial(const struct pbuf *p, void *dataptr, u16_t len, u16_t offset);
+pbuf.h:240:err_t pbuf_take(struct pbuf *buf, const void *dataptr, u16_t len);
+pbuf.h:241:err_t pbuf_take_at(struct pbuf *buf, const void *dataptr, u16_t len, u16_t offset);
+pbuf.h:242:struct pbuf *pbuf_skip(struct pbuf* in, u16_t in_offset, u16_t* out_offset);
+pbuf.h:243:struct pbuf *pbuf_coalesce(struct pbuf *p, pbuf_layer layer);
+pbuf.h:244:#if LWIP_CHECKSUM_ON_COPY
+pbuf.h:245:err_t pbuf_fill_chksum(struct pbuf *p, u16_t start_offset, const void *dataptr,
+pbuf.h:246:                       u16_t len, u16_t *chksum);
+pbuf.h:247:#endif /* LWIP_CHECKSUM_ON_COPY */
+pbuf.h:248:#if LWIP_TCP && TCP_QUEUE_OOSEQ && LWIP_WND_SCALE
+pbuf.h:249:void pbuf_split_64k(struct pbuf *p, struct pbuf **rest);
+pbuf.h:250:#endif /* LWIP_TCP && TCP_QUEUE_OOSEQ && LWIP_WND_SCALE */
+sockets.h:115:#if !LWIP_TCPIP_CORE_LOCKING
+sockets.h:116:/** Maximum optlen used by setsockopt/getsockopt */
+sockets.h:117:#define LWIP_SETGETSOCKOPT_MAXOPTLEN 16
+sockets.h:118:
+sockets.h:119:/** This struct is used to pass data to the set/getsockopt_internal
+sockets.h:120: * functions running in tcpip_thread context (only a void* is allowed) */
+sockets.h:121:struct lwip_setgetsockopt_data {
+sockets.h:122:  /** socket index for which to change options */
+sockets.h:123:  int s;
+sockets.h:124:  /** level of the option to process */
+sockets.h:125:  int level;
+sockets.h:126:  /** name of the option to process */
+sockets.h:127:  int optname;
+sockets.h:128:  /** set: value to set the option to
+sockets.h:129:    * get: value of the option is stored here */
+sockets.h:130:#if LWIP_MPU_COMPATIBLE
+sockets.h:131:  u8_t optval[LWIP_SETGETSOCKOPT_MAXOPTLEN];
+sockets.h:132:#else
+sockets.h:133:  union {
+sockets.h:134:     void *p;
+sockets.h:135:     const void *pc;
+sockets.h:136:  } optval;
+sockets.h:137:#endif
+sockets.h:138:  /** size of *optval */
+sockets.h:139:  socklen_t optlen;
+sockets.h:140:  /** if an error occurs, it is temporarily stored here */
+sockets.h:141:  err_t err;
+sockets.h:142:  /** semaphore to wake up the calling task */
+sockets.h:143:  void* completed_sem;
+sockets.h:144:};
+sockets.h:145:#endif /* !LWIP_TCPIP_CORE_LOCKING */
+sockets.h:146:
+sockets.h:147:#if !defined(iovec)
+sockets.h:148:struct iovec {
+sockets.h:149:  void  *iov_base;
+sockets.h:150:  size_t iov_len;
+sockets.h:151:};
+sockets.h:152:#endif
+sockets.h:153:
+sockets.h:154:struct msghdr {
+sockets.h:155:  void         *msg_name;
+sockets.h:156:  socklen_t     msg_namelen;
+sockets.h:157:  struct iovec *msg_iov;
+sockets.h:158:  int           msg_iovlen;
+sockets.h:159:  void         *msg_control;
+sockets.h:160:  socklen_t     msg_controllen;
+sockets.h:161:  int           msg_flags;
+sockets.h:162:};
+sockets.h:163:
+sockets.h:164:/* Socket protocol types (TCP/UDP/RAW) */
+sockets.h:165:#define SOCK_STREAM     1
+sockets.h:166:#define SOCK_DGRAM      2
+sockets.h:167:#define SOCK_RAW        3
+sockets.h:168:
+sockets.h:169:/*
+sockets.h:170: * Option flags per-socket. These must match the SOF_ flags in ip.h (checked in init.c)
+sockets.h:171: */
+sockets.h:172:#define SO_REUSEADDR   0x0004 /* Allow local address reuse */
+sockets.h:173:#define SO_KEEPALIVE   0x0008 /* keep connections alive */
+sockets.h:174:#define SO_BROADCAST   0x0020 /* permit to send and to receive broadcast messages (see IP_SOF_BROADCAST option) */
+sockets.h:175:
+sockets.h:176:
+sockets.h:177:/*
+sockets.h:178: * Additional options, not kept in so_options.
+sockets.h:179: */
+sockets.h:180:#define SO_DEBUG       0x0001 /* Unimplemented: turn on debugging info recording */
+sockets.h:181:#define SO_ACCEPTCONN  0x0002 /* socket has had listen() */
+sockets.h:182:#define SO_DONTROUTE   0x0010 /* Unimplemented: just use interface addresses */
+sockets.h:183:#define SO_USELOOPBACK 0x0040 /* Unimplemented: bypass hardware when possible */
+sockets.h:184:#define SO_LINGER      0x0080 /* linger on close if data present */
+sockets.h:185:#define SO_DONTLINGER  ((int)(~SO_LINGER))
+sockets.h:186:#define SO_OOBINLINE   0x0100 /* Unimplemented: leave received OOB data in line */
+sockets.h:187:#define SO_REUSEPORT   0x0200 /* Unimplemented: allow local address & port reuse */
+sockets.h:188:#define SO_SNDBUF      0x1001 /* Unimplemented: send buffer size */
+sockets.h:189:#define SO_RCVBUF      0x1002 /* receive buffer size */
+sockets.h:190:#define SO_SNDLOWAT    0x1003 /* Unimplemented: send low-water mark */
+sockets.h:191:#define SO_RCVLOWAT    0x1004 /* Unimplemented: receive low-water mark */
+sockets.h:192:#define SO_SNDTIMEO    0x1005 /* send timeout */
+sockets.h:193:#define SO_RCVTIMEO    0x1006 /* receive timeout */
+sockets.h:194:#define SO_ERROR       0x1007 /* get error status and clear */
+sockets.h:195:#define SO_TYPE        0x1008 /* get socket type */
+sockets.h:196:#define SO_CONTIMEO    0x1009 /* Unimplemented: connect timeout */
+sockets.h:197:#define SO_NO_CHECK    0x100a /* don't create UDP checksum */
+sockets.h:198:
+sockets.h:199:
+sockets.h:200:/*
+sockets.h:201: * Structure used for manipulating linger option.
+sockets.h:202: */
+sockets.h:203:struct linger {
+sockets.h:204:       int l_onoff;                /* option on/off */
+sockets.h:205:       int l_linger;               /* linger time in seconds */
+sockets.h:206:};
+sockets.h:207:
+sockets.h:208:/*
+sockets.h:209: * Level number for (get/set)sockopt() to apply to socket itself.
+sockets.h:210: */
+sockets.h:211:#define  SOL_SOCKET  0xfff    /* options for socket level */
+sockets.h:212:
+sockets.h:213:
+sockets.h:214:#define AF_UNSPEC       0
+sockets.h:215:#define AF_INET         2
+sockets.h:216:#if LWIP_IPV6
+sockets.h:217:#define AF_INET6        10
+sockets.h:218:#else /* LWIP_IPV6 */
+sockets.h:219:#define AF_INET6        AF_UNSPEC
+sockets.h:220:#endif /* LWIP_IPV6 */
+sockets.h:221:#define PF_INET         AF_INET
+sockets.h:222:#define PF_INET6        AF_INET6
+sockets.h:223:#define PF_UNSPEC       AF_UNSPEC
+sockets.h:224:
+sockets.h:225:#define IPPROTO_IP      0
+sockets.h:226:#define IPPROTO_ICMP    1
+sockets.h:227:#define IPPROTO_TCP     6
+sockets.h:228:#define IPPROTO_UDP     17
+sockets.h:229:#if LWIP_IPV6
+sockets.h:230:#define IPPROTO_IPV6    41
+sockets.h:231:#define IPPROTO_ICMPV6  58
+sockets.h:232:#endif /* LWIP_IPV6 */
+sockets.h:233:#define IPPROTO_UDPLITE 136
+sockets.h:234:#define IPPROTO_RAW     255
+sockets.h:235:
+sockets.h:236:/* Flags we can use with send and recv. */
+sockets.h:237:#define MSG_PEEK       0x01    /* Peeks at an incoming message */
+sockets.h:238:#define MSG_WAITALL    0x02    /* Unimplemented: Requests that the function block until the full amount of data requested can be returned */
+sockets.h:239:#define MSG_OOB        0x04    /* Unimplemented: Requests out-of-band data. The significance and semantics of out-of-band data are protocol-specific */
+sockets.h:240:#define MSG_DONTWAIT   0x08    /* Nonblocking i/o for this operation only */
+sockets.h:241:#define MSG_MORE       0x10    /* Sender will send more */
+sockets.h:242:
+sockets.h:243:
+sockets.h:244:/*
+sockets.h:245: * Options for level IPPROTO_IP
+sockets.h:246: */
+sockets.h:247:#define IP_TOS             1
+sockets.h:248:#define IP_TTL             2
+sockets.h:249:
+sockets.h:250:#if LWIP_TCP
+sockets.h:251:/*
+sockets.h:252: * Options for level IPPROTO_TCP
+sockets.h:253: */
+sockets.h:254:#define TCP_NODELAY    0x01    /* don't delay send to coalesce packets */
+sockets.h:255:#define TCP_KEEPALIVE  0x02    /* send KEEPALIVE probes when idle for pcb->keep_idle milliseconds */
+sockets.h:256:#define TCP_KEEPIDLE   0x03    /* set pcb->keep_idle  - Same as TCP_KEEPALIVE, but use seconds for get/setsockopt */
+sockets.h:257:#define TCP_KEEPINTVL  0x04    /* set pcb->keep_intvl - Use seconds for get/setsockopt */
+sockets.h:258:#define TCP_KEEPCNT    0x05    /* set pcb->keep_cnt   - Use number of probes sent for get/setsockopt */
+sockets.h:259:#endif /* LWIP_TCP */
+priv/api_msg.h:118:#if LWIP_TCP
+priv/api_msg.h:119:    /** used for lwip_netconn_do_close (/shutdown) */
+priv/api_msg.h:120:    struct {
+priv/api_msg.h:121:      u8_t shut;
+priv/api_msg.h:122:#if LWIP_SO_SNDTIMEO || LWIP_SO_LINGER
+priv/api_msg.h:123:      u32_t time_started;
+priv/api_msg.h:124:#else /* LWIP_SO_SNDTIMEO || LWIP_SO_LINGER */
+priv/api_msg.h:125:      u8_t polls_left;
+priv/api_msg.h:126:#endif /* LWIP_SO_SNDTIMEO || LWIP_SO_LINGER */
+priv/api_msg.h:127:    } sd;
+priv/api_msg.h:128:#endif /* LWIP_TCP */
+priv/api_msg.h:129:#if LWIP_IGMP || (LWIP_IPV6 && LWIP_IPV6_MLD)
+priv/api_msg.h:130:    /** used for lwip_netconn_do_join_leave_group */
+priv/api_msg.h:131:    struct {
+priv/api_msg.h:132:      API_MSG_M_DEF_C(ip_addr_t, multiaddr);
+priv/api_msg.h:133:      API_MSG_M_DEF_C(ip_addr_t, netif_addr);
+priv/api_msg.h:134:      enum netconn_igmp join_or_leave;
+priv/api_msg.h:135:    } jl;
+priv/api_msg.h:136:#endif /* LWIP_IGMP || (LWIP_IPV6 && LWIP_IPV6_MLD) */
+priv/api_msg.h:137:#if TCP_LISTEN_BACKLOG
+priv/api_msg.h:138:    struct {
+priv/api_msg.h:139:      u8_t backlog;
+priv/api_msg.h:140:    } lb;
+priv/api_msg.h:141:#endif /* TCP_LISTEN_BACKLOG */
+priv/api_msg.h:142:  } msg;
+priv/api_msg.h:143:#if LWIP_NETCONN_SEM_PER_THREAD
+priv/api_msg.h:144:  sys_sem_t* op_completed_sem;
+priv/api_msg.h:145:#endif /* LWIP_NETCONN_SEM_PER_THREAD */
+priv/api_msg.h:146:};
+priv/api_msg.h:147:
+priv/api_msg.h:148:#if LWIP_NETCONN_SEM_PER_THREAD
+priv/api_msg.h:149:#define LWIP_API_MSG_SEM(msg)          ((msg)->op_completed_sem)
+priv/api_msg.h:150:#else /* LWIP_NETCONN_SEM_PER_THREAD */
+priv/api_msg.h:151:#define LWIP_API_MSG_SEM(msg)          (&(msg)->conn->op_completed)
+priv/api_msg.h:152:#endif /* LWIP_NETCONN_SEM_PER_THREAD */
+priv/api_msg.h:153:
+priv/api_msg.h:154:
+priv/api_msg.h:155:#if LWIP_DNS
+priv/api_msg.h:156:/** As lwip_netconn_do_gethostbyname requires more arguments but doesn't require a netconn,
+priv/api_msg.h:157:    it has its own struct (to avoid struct api_msg getting bigger than necessary).
+priv/api_msg.h:158:    lwip_netconn_do_gethostbyname must be called using tcpip_callback instead of tcpip_apimsg
+priv/api_msg.h:159:    (see netconn_gethostbyname). */
+priv/api_msg.h:160:struct dns_api_msg {
+priv/api_msg.h:161:  /** Hostname to query or dotted IP address string */
+priv/api_msg.h:162:#if LWIP_MPU_COMPATIBLE
+priv/api_msg.h:163:  char name[DNS_MAX_NAME_LENGTH];
+priv/api_msg.h:164:#else /* LWIP_MPU_COMPATIBLE */
+priv/api_msg.h:165:  const char *name;
+priv/api_msg.h:166:#endif /* LWIP_MPU_COMPATIBLE */
+priv/api_msg.h:167:  /** The resolved address is stored here */
+priv/api_msg.h:168:  ip_addr_t API_MSG_M_DEF(addr);
+priv/api_msg.h:169:#if LWIP_IPV4 && LWIP_IPV6
+priv/api_msg.h:170:  /** Type of resolve call */
+priv/api_msg.h:171:  u8_t dns_addrtype;
+priv/api_msg.h:172:#endif /* LWIP_IPV4 && LWIP_IPV6 */
+priv/api_msg.h:173:  /** This semaphore is posted when the name is resolved, the application thread
+priv/api_msg.h:174:      should wait on it. */
+priv/api_msg.h:175:  sys_sem_t API_MSG_M_DEF_SEM(sem);
+priv/api_msg.h:176:  /** Errors are given back here */
+priv/api_msg.h:177:  err_t API_MSG_M_DEF(err);
+priv/api_msg.h:178:};
+priv/api_msg.h:179:#endif /* LWIP_DNS */
+priv/api_msg.h:180:
+priv/api_msg.h:181:#if LWIP_TCP
+priv/api_msg.h:182:extern u8_t netconn_aborted;
+priv/api_msg.h:183:#endif /* LWIP_TCP */
+api.h:226:#if LWIP_TCP
+api.h:227:  /** mbox where new connections are stored until processed
+api.h:228:      by the application thread */
+api.h:229:  sys_mbox_t acceptmbox;
+api.h:230:#endif /* LWIP_TCP */
+api.h:231:  /** only used for socket layer */
+api.h:232:#if LWIP_SOCKET
+api.h:233:  int socket;
+api.h:234:#endif /* LWIP_SOCKET */
+api.h:235:#if LWIP_SO_SNDTIMEO
+api.h:236:  /** timeout to wait for sending data (which means enqueueing data for sending
+api.h:237:      in internal buffers) in milliseconds */
+api.h:238:  s32_t send_timeout;
+api.h:239:#endif /* LWIP_SO_RCVTIMEO */
+api.h:240:#if LWIP_SO_RCVTIMEO
+api.h:241:  /** timeout in milliseconds to wait for new data to be received
+api.h:242:      (or connections to arrive for listening netconns) */
+api.h:243:  int recv_timeout;
+api.h:244:#endif /* LWIP_SO_RCVTIMEO */
+api.h:245:#if LWIP_SO_RCVBUF
+api.h:246:  /** maximum amount of bytes queued in recvmbox
+api.h:247:      not used for TCP: adjust TCP_WND instead! */
+api.h:248:  int recv_bufsize;
+api.h:249:  /** number of bytes currently in recvmbox to be received,
+api.h:250:      tested against recv_bufsize to limit bytes on recvmbox
+api.h:251:      for UDP and RAW, used for FIONREAD */
+api.h:252:  int recv_avail;
+api.h:253:#endif /* LWIP_SO_RCVBUF */
+api.h:254:#if LWIP_SO_LINGER
+api.h:255:   /** values <0 mean linger is disabled, values > 0 are seconds to linger */
+api.h:256:  s16_t linger;
+api.h:257:#endif /* LWIP_SO_LINGER */
+api.h:258:  /** flags holding more netconn-internal state, see NETCONN_FLAG_* defines */
+api.h:259:  u8_t flags;
+api.h:260:#if LWIP_TCP
+api.h:261:  /** TCP: when data passed to netconn_write doesn't fit into the send buffer,
+api.h:262:      this temporarily stores how much is already sent. */
+api.h:263:  size_t write_offset;
+api.h:264:  /** TCP: when data passed to netconn_write doesn't fit into the send buffer,
+api.h:265:      this temporarily stores the message.
+api.h:266:      Also used during connect and close. */
+api.h:267:  struct api_msg *current_msg;
+api.h:268:#endif /* LWIP_TCP */
+priv/tcp_priv.h:42:#if LWIP_TCP /* don't build if not configured for use in lwipopts.h */
+priv/tcp_priv.h:43:
+priv/tcp_priv.h:44:#include "lwip/tcp.h"
+priv/tcp_priv.h:45:#include "lwip/mem.h"
+priv/tcp_priv.h:46:#include "lwip/pbuf.h"
+priv/tcp_priv.h:47:#include "lwip/ip.h"
+priv/tcp_priv.h:48:#include "lwip/icmp.h"
+priv/tcp_priv.h:49:#include "lwip/err.h"
+priv/tcp_priv.h:50:#include "lwip/ip6.h"
+priv/tcp_priv.h:51:#include "lwip/ip6_addr.h"
+priv/tcp_priv.h:52:#include "lwip/prot/tcp.h"
+priv/tcp_priv.h:53:
+priv/tcp_priv.h:54:#ifdef __cplusplus
+priv/tcp_priv.h:55:extern "C" {
+priv/tcp_priv.h:56:#endif
+priv/tcp_priv.h:57:
+priv/tcp_priv.h:58:/* Functions for interfacing with TCP: */
+priv/tcp_priv.h:59:
+priv/tcp_priv.h:60:/* Lower layer interface to TCP: */
+priv/tcp_priv.h:61:void             tcp_init    (void);  /* Initialize this module. */
+priv/tcp_priv.h:62:void             tcp_tmr     (void);  /* Must be called every
+priv/tcp_priv.h:63:                                         TCP_TMR_INTERVAL
+priv/tcp_priv.h:64:                                         ms. (Typically 250 ms). */
+priv/tcp_priv.h:65:/* It is also possible to call these two functions at the right
+priv/tcp_priv.h:66:   intervals (instead of calling tcp_tmr()). */
+priv/tcp_priv.h:67:void             tcp_slowtmr (void);
+priv/tcp_priv.h:68:void             tcp_fasttmr (void);
+priv/tcp_priv.h:69:
+priv/tcp_priv.h:70:/* Call this from a netif driver (watch out for threading issues!) that has
+priv/tcp_priv.h:71:   returned a memory error on transmit and now has free buffers to send more.
+priv/tcp_priv.h:72:   This iterates all active pcbs that had an error and tries to call
+priv/tcp_priv.h:73:   tcp_output, so use this with care as it might slow down the system. */
+priv/tcp_priv.h:74:void             tcp_txnow   (void);
+priv/tcp_priv.h:75:
+priv/tcp_priv.h:76:/* Only used by IP to pass a TCP segment to TCP: */
+priv/tcp_priv.h:77:void             tcp_input   (struct pbuf *p, struct netif *inp);
+priv/tcp_priv.h:78:/* Used within the TCP code only: */
+priv/tcp_priv.h:79:struct tcp_pcb * tcp_alloc   (u8_t prio);
+priv/tcp_priv.h:80:void             tcp_abandon (struct tcp_pcb *pcb, int reset);
+priv/tcp_priv.h:81:err_t            tcp_send_empty_ack(struct tcp_pcb *pcb);
+priv/tcp_priv.h:82:void             tcp_rexmit  (struct tcp_pcb *pcb);
+priv/tcp_priv.h:83:void             tcp_rexmit_rto  (struct tcp_pcb *pcb);
+priv/tcp_priv.h:84:void             tcp_rexmit_fast (struct tcp_pcb *pcb);
+priv/tcp_priv.h:85:u32_t            tcp_update_rcv_ann_wnd(struct tcp_pcb *pcb);
+priv/tcp_priv.h:86:err_t            tcp_process_refused_data(struct tcp_pcb *pcb);
+priv/tcp_priv.h:87:
+priv/tcp_priv.h:88:/**
+priv/tcp_priv.h:89: * This is the Nagle algorithm: try to combine user data to send as few TCP
+priv/tcp_priv.h:90: * segments as possible. Only send if
+priv/tcp_priv.h:91: * - no previously transmitted data on the connection remains unacknowledged or
+priv/tcp_priv.h:92: * - the TF_NODELAY flag is set (nagle algorithm turned off for this pcb) or
+priv/tcp_priv.h:93: * - the only unsent segment is at least pcb->mss bytes long (or there is more
+priv/tcp_priv.h:94: *   than one unsent segment - with lwIP, this can happen although unsent->len < mss)
+priv/tcp_priv.h:95: * - or if we are in fast-retransmit (TF_INFR)
+priv/tcp_priv.h:96: */
+priv/tcp_priv.h:97:#define tcp_do_output_nagle(tpcb) ((((tpcb)->unacked == NULL) || \
+priv/tcp_priv.h:98:                            ((tpcb)->flags & (TF_NODELAY | TF_INFR)) || \
+priv/tcp_priv.h:99:                            (((tpcb)->unsent != NULL) && (((tpcb)->unsent->next != NULL) || \
+priv/tcp_priv.h:100:                              ((tpcb)->unsent->len >= (tpcb)->mss))) || \
+priv/tcp_priv.h:101:                            ((tcp_sndbuf(tpcb) == 0) || (tcp_sndqueuelen(tpcb) >= TCP_SND_QUEUELEN)) \
+priv/tcp_priv.h:102:                            ) ? 1 : 0)
+priv/tcp_priv.h:103:#define tcp_output_nagle(tpcb) (tcp_do_output_nagle(tpcb) ? tcp_output(tpcb) : ERR_OK)
+priv/tcp_priv.h:104:
+priv/tcp_priv.h:105:
+priv/tcp_priv.h:106:#define TCP_SEQ_LT(a,b)     ((s32_t)((u32_t)(a) - (u32_t)(b)) < 0)
+priv/tcp_priv.h:107:#define TCP_SEQ_LEQ(a,b)    ((s32_t)((u32_t)(a) - (u32_t)(b)) <= 0)
+priv/tcp_priv.h:108:#define TCP_SEQ_GT(a,b)     ((s32_t)((u32_t)(a) - (u32_t)(b)) > 0)
+priv/tcp_priv.h:109:#define TCP_SEQ_GEQ(a,b)    ((s32_t)((u32_t)(a) - (u32_t)(b)) >= 0)
+priv/tcp_priv.h:110:/* is b<=a<=c? */
+priv/tcp_priv.h:111:#if 0 /* see bug #10548 */
+priv/tcp_priv.h:112:#define TCP_SEQ_BETWEEN(a,b,c) ((c)-(b) >= (a)-(b))
+priv/tcp_priv.h:113:#endif
+priv/tcp_priv.h:114:#define TCP_SEQ_BETWEEN(a,b,c) (TCP_SEQ_GEQ(a,b) && TCP_SEQ_LEQ(a,c))
+priv/tcp_priv.h:115:
+priv/tcp_priv.h:116:#ifndef TCP_TMR_INTERVAL
+priv/tcp_priv.h:117:#define TCP_TMR_INTERVAL       250  /* The TCP timer interval in milliseconds. */
+priv/tcp_priv.h:118:#endif /* TCP_TMR_INTERVAL */
+priv/tcp_priv.h:119:
+priv/tcp_priv.h:120:#ifndef TCP_FAST_INTERVAL
+priv/tcp_priv.h:121:#define TCP_FAST_INTERVAL      TCP_TMR_INTERVAL /* the fine grained timeout in milliseconds */
+priv/tcp_priv.h:122:#endif /* TCP_FAST_INTERVAL */
+priv/tcp_priv.h:123:
+priv/tcp_priv.h:124:#ifndef TCP_SLOW_INTERVAL
+priv/tcp_priv.h:125:#define TCP_SLOW_INTERVAL      (2*TCP_TMR_INTERVAL)  /* the coarse grained timeout in milliseconds */
+priv/tcp_priv.h:126:#endif /* TCP_SLOW_INTERVAL */
+priv/tcp_priv.h:127:
+priv/tcp_priv.h:128:#define TCP_FIN_WAIT_TIMEOUT 20000 /* milliseconds */
+priv/tcp_priv.h:129:#define TCP_SYN_RCVD_TIMEOUT 20000 /* milliseconds */
+priv/tcp_priv.h:130:
+priv/tcp_priv.h:131:#define TCP_OOSEQ_TIMEOUT        6U /* x RTO */
+priv/tcp_priv.h:132:
+priv/tcp_priv.h:133:#ifndef TCP_MSL
+priv/tcp_priv.h:134:#define TCP_MSL 60000UL /* The maximum segment lifetime in milliseconds */
+priv/tcp_priv.h:135:#endif
+priv/tcp_priv.h:136:
+priv/tcp_priv.h:137:/* Keepalive values, compliant with RFC 1122. Don't change this unless you know what you're doing */
+priv/tcp_priv.h:138:#ifndef  TCP_KEEPIDLE_DEFAULT
+priv/tcp_priv.h:139:#define  TCP_KEEPIDLE_DEFAULT     7200000UL /* Default KEEPALIVE timer in milliseconds */
+priv/tcp_priv.h:140:#endif
+priv/tcp_priv.h:141:
+priv/tcp_priv.h:142:#ifndef  TCP_KEEPINTVL_DEFAULT
+priv/tcp_priv.h:143:#define  TCP_KEEPINTVL_DEFAULT    75000UL   /* Default Time between KEEPALIVE probes in milliseconds */
+priv/tcp_priv.h:144:#endif
+priv/tcp_priv.h:145:
+priv/tcp_priv.h:146:#ifndef  TCP_KEEPCNT_DEFAULT
+priv/tcp_priv.h:147:#define  TCP_KEEPCNT_DEFAULT      9U        /* Default Counter for KEEPALIVE probes */
+priv/tcp_priv.h:148:#endif
+priv/tcp_priv.h:149:
+priv/tcp_priv.h:150:#define  TCP_MAXIDLE              TCP_KEEPCNT_DEFAULT * TCP_KEEPINTVL_DEFAULT  /* Maximum KEEPALIVE probe time */
+priv/tcp_priv.h:151:
+priv/tcp_priv.h:152:#define TCP_TCPLEN(seg) ((seg)->len + (((TCPH_FLAGS((seg)->tcphdr) & (TCP_FIN | TCP_SYN)) != 0) ? 1U : 0U))
+priv/tcp_priv.h:153:
+priv/tcp_priv.h:154:/** Flags used on input processing, not on pcb->flags
+priv/tcp_priv.h:155:*/
+priv/tcp_priv.h:156:#define TF_RESET     (u8_t)0x08U   /* Connection was reset. */
+priv/tcp_priv.h:157:#define TF_CLOSED    (u8_t)0x10U   /* Connection was successfully closed. */
+priv/tcp_priv.h:158:#define TF_GOT_FIN   (u8_t)0x20U   /* Connection was closed by the remote end. */
+priv/tcp_priv.h:159:
+priv/tcp_priv.h:160:
+priv/tcp_priv.h:161:#if LWIP_EVENT_API
+priv/tcp_priv.h:162:
+priv/tcp_priv.h:163:#define TCP_EVENT_ACCEPT(lpcb,pcb,arg,err,ret) ret = lwip_tcp_event(arg, (pcb),\
+priv/tcp_priv.h:164:                LWIP_EVENT_ACCEPT, NULL, 0, err)
+priv/tcp_priv.h:165:#define TCP_EVENT_SENT(pcb,space,ret) ret = lwip_tcp_event((pcb)->callback_arg, (pcb),\
+priv/tcp_priv.h:166:                   LWIP_EVENT_SENT, NULL, space, ERR_OK)
+priv/tcp_priv.h:167:#define TCP_EVENT_RECV(pcb,p,err,ret) ret = lwip_tcp_event((pcb)->callback_arg, (pcb),\
+priv/tcp_priv.h:168:                LWIP_EVENT_RECV, (p), 0, (err))
+priv/tcp_priv.h:169:#define TCP_EVENT_CLOSED(pcb,ret) ret = lwip_tcp_event((pcb)->callback_arg, (pcb),\
+priv/tcp_priv.h:170:                LWIP_EVENT_RECV, NULL, 0, ERR_OK)
+priv/tcp_priv.h:171:#define TCP_EVENT_CONNECTED(pcb,err,ret) ret = lwip_tcp_event((pcb)->callback_arg, (pcb),\
+priv/tcp_priv.h:172:                LWIP_EVENT_CONNECTED, NULL, 0, (err))
+priv/tcp_priv.h:173:#define TCP_EVENT_POLL(pcb,ret)       ret = lwip_tcp_event((pcb)->callback_arg, (pcb),\
+priv/tcp_priv.h:174:                LWIP_EVENT_POLL, NULL, 0, ERR_OK)
+priv/tcp_priv.h:175:#define TCP_EVENT_ERR(errf,arg,err)  lwip_tcp_event((arg), NULL, \
+priv/tcp_priv.h:176:                LWIP_EVENT_ERR, NULL, 0, (err))
+priv/tcp_priv.h:177:
+priv/tcp_priv.h:178:#else /* LWIP_EVENT_API */
+priv/tcp_priv.h:179:
+priv/tcp_priv.h:180:#define TCP_EVENT_ACCEPT(lpcb,pcb,arg,err,ret)                 \
+priv/tcp_priv.h:181:  do {                                                         \
+priv/tcp_priv.h:182:    if((lpcb != NULL) && ((lpcb)->accept != NULL))             \
+priv/tcp_priv.h:183:      (ret) = (lpcb)->accept((arg),(pcb),(err));               \
+priv/tcp_priv.h:184:    else (ret) = ERR_ARG;                                      \
+priv/tcp_priv.h:185:  } while (0)
+priv/tcp_priv.h:186:
+priv/tcp_priv.h:187:#define TCP_EVENT_SENT(pcb,space,ret)                          \
+priv/tcp_priv.h:188:  do {                                                         \
+priv/tcp_priv.h:189:    if((pcb)->sent != NULL)                                    \
+priv/tcp_priv.h:190:      (ret) = (pcb)->sent((pcb)->callback_arg,(pcb),(space));  \
+priv/tcp_priv.h:191:    else (ret) = ERR_OK;                                       \
+priv/tcp_priv.h:192:  } while (0)
+priv/tcp_priv.h:193:
+priv/tcp_priv.h:194:#define TCP_EVENT_RECV(pcb,p,err,ret)                          \
+priv/tcp_priv.h:195:  do {                                                         \
+priv/tcp_priv.h:196:    if((pcb)->recv != NULL) {                                  \
+priv/tcp_priv.h:197:      (ret) = (pcb)->recv((pcb)->callback_arg,(pcb),(p),(err));\
+priv/tcp_priv.h:198:    } else {                                                   \
+priv/tcp_priv.h:199:      (ret) = tcp_recv_null(NULL, (pcb), (p), (err));          \
+priv/tcp_priv.h:200:    }                                                          \
+priv/tcp_priv.h:201:  } while (0)
+priv/tcp_priv.h:202:
+priv/tcp_priv.h:203:#define TCP_EVENT_CLOSED(pcb,ret)                                \
+priv/tcp_priv.h:204:  do {                                                           \
+priv/tcp_priv.h:205:    if(((pcb)->recv != NULL)) {                                  \
+priv/tcp_priv.h:206:      (ret) = (pcb)->recv((pcb)->callback_arg,(pcb),NULL,ERR_OK);\
+priv/tcp_priv.h:207:    } else {                                                     \
+priv/tcp_priv.h:208:      (ret) = ERR_OK;                                            \
+priv/tcp_priv.h:209:    }                                                            \
+priv/tcp_priv.h:210:  } while (0)
+priv/tcp_priv.h:211:
+priv/tcp_priv.h:212:#define TCP_EVENT_CONNECTED(pcb,err,ret)                         \
+priv/tcp_priv.h:213:  do {                                                           \
+priv/tcp_priv.h:214:    if((pcb)->connected != NULL)                                 \
+priv/tcp_priv.h:215:      (ret) = (pcb)->connected((pcb)->callback_arg,(pcb),(err)); \
+priv/tcp_priv.h:216:    else (ret) = ERR_OK;                                         \
+priv/tcp_priv.h:217:  } while (0)
+priv/tcp_priv.h:218:
+priv/tcp_priv.h:219:#define TCP_EVENT_POLL(pcb,ret)                                \
+priv/tcp_priv.h:220:  do {                                                         \
+priv/tcp_priv.h:221:    if((pcb)->poll != NULL)                                    \
+priv/tcp_priv.h:222:      (ret) = (pcb)->poll((pcb)->callback_arg,(pcb));          \
+priv/tcp_priv.h:223:    else (ret) = ERR_OK;                                       \
+priv/tcp_priv.h:224:  } while (0)
+priv/tcp_priv.h:225:
+priv/tcp_priv.h:226:#define TCP_EVENT_ERR(errf,arg,err)                            \
+priv/tcp_priv.h:227:  do {                                                         \
+priv/tcp_priv.h:228:    if((errf) != NULL)                                         \
+priv/tcp_priv.h:229:      (errf)((arg),(err));                                     \
+priv/tcp_priv.h:230:  } while (0)
+priv/tcp_priv.h:231:
+priv/tcp_priv.h:232:#endif /* LWIP_EVENT_API */
+priv/tcp_priv.h:233:
+priv/tcp_priv.h:234:/** Enabled extra-check for TCP_OVERSIZE if LWIP_DEBUG is enabled */
+priv/tcp_priv.h:235:#if TCP_OVERSIZE && defined(LWIP_DEBUG)
+priv/tcp_priv.h:236:#define TCP_OVERSIZE_DBGCHECK 1
+priv/tcp_priv.h:237:#else
+priv/tcp_priv.h:238:#define TCP_OVERSIZE_DBGCHECK 0
+priv/tcp_priv.h:239:#endif
+priv/tcp_priv.h:240:
+priv/tcp_priv.h:241:/** Don't generate checksum on copy if CHECKSUM_GEN_TCP is disabled */
+priv/tcp_priv.h:242:#define TCP_CHECKSUM_ON_COPY  (LWIP_CHECKSUM_ON_COPY && CHECKSUM_GEN_TCP)
+priv/tcp_priv.h:243:
+priv/tcp_priv.h:244:/* This structure represents a TCP segment on the unsent, unacked and ooseq queues */
+priv/tcp_priv.h:245:struct tcp_seg {
+priv/tcp_priv.h:246:  struct tcp_seg *next;    /* used when putting segments on a queue */
+priv/tcp_priv.h:247:  struct pbuf *p;          /* buffer containing data + TCP header */
+priv/tcp_priv.h:248:  u16_t len;               /* the TCP length of this segment */
+priv/tcp_priv.h:249:#if TCP_OVERSIZE_DBGCHECK
+priv/tcp_priv.h:250:  u16_t oversize_left;     /* Extra bytes available at the end of the last
+priv/tcp_priv.h:251:                              pbuf in unsent (used for asserting vs.
+priv/tcp_priv.h:252:                              tcp_pcb.unsent_oversized only) */
+priv/tcp_priv.h:253:#endif /* TCP_OVERSIZE_DBGCHECK */
+priv/tcp_priv.h:254:#if TCP_CHECKSUM_ON_COPY
+priv/tcp_priv.h:255:  u16_t chksum;
+priv/tcp_priv.h:256:  u8_t  chksum_swapped;
+priv/tcp_priv.h:257:#endif /* TCP_CHECKSUM_ON_COPY */
+priv/tcp_priv.h:258:  u8_t  flags;
+priv/tcp_priv.h:259:#define TF_SEG_OPTS_MSS         (u8_t)0x01U /* Include MSS option. */
+priv/tcp_priv.h:260:#define TF_SEG_OPTS_TS          (u8_t)0x02U /* Include timestamp option. */
+priv/tcp_priv.h:261:#define TF_SEG_DATA_CHECKSUMMED (u8_t)0x04U /* ALL data (not the header) is
+priv/tcp_priv.h:262:                                               checksummed into 'chksum' */
+priv/tcp_priv.h:263:#define TF_SEG_OPTS_WND_SCALE   (u8_t)0x08U /* Include WND SCALE option */
+priv/tcp_priv.h:264:  struct tcp_hdr *tcphdr;  /* the TCP header */
+priv/tcp_priv.h:265:};
+priv/tcp_priv.h:266:
+priv/tcp_priv.h:267:#define LWIP_TCP_OPT_EOL        0
+priv/tcp_priv.h:268:#define LWIP_TCP_OPT_NOP        1
+priv/tcp_priv.h:269:#define LWIP_TCP_OPT_MSS        2
+priv/tcp_priv.h:270:#define LWIP_TCP_OPT_WS         3
+priv/tcp_priv.h:271:#define LWIP_TCP_OPT_TS         8
+priv/tcp_priv.h:272:
+priv/tcp_priv.h:273:#define LWIP_TCP_OPT_LEN_MSS    4
+priv/tcp_priv.h:274:#if LWIP_TCP_TIMESTAMPS
+priv/tcp_priv.h:275:#define LWIP_TCP_OPT_LEN_TS     10
+priv/tcp_priv.h:276:#define LWIP_TCP_OPT_LEN_TS_OUT 12 /* aligned for output (includes NOP padding) */
+priv/tcp_priv.h:277:#else
+priv/tcp_priv.h:278:#define LWIP_TCP_OPT_LEN_TS_OUT 0
+priv/tcp_priv.h:279:#endif
+priv/tcp_priv.h:280:#if LWIP_WND_SCALE
+priv/tcp_priv.h:281:#define LWIP_TCP_OPT_LEN_WS     3
+priv/tcp_priv.h:282:#define LWIP_TCP_OPT_LEN_WS_OUT 4 /* aligned for output (includes NOP padding) */
+priv/tcp_priv.h:283:#else
+priv/tcp_priv.h:284:#define LWIP_TCP_OPT_LEN_WS_OUT 0
+priv/tcp_priv.h:285:#endif
+priv/tcp_priv.h:286:
+priv/tcp_priv.h:287:#define LWIP_TCP_OPT_LENGTH(flags) \
+priv/tcp_priv.h:288:  (flags & TF_SEG_OPTS_MSS       ? LWIP_TCP_OPT_LEN_MSS    : 0) + \
+priv/tcp_priv.h:289:  (flags & TF_SEG_OPTS_TS        ? LWIP_TCP_OPT_LEN_TS_OUT : 0) + \
+priv/tcp_priv.h:290:  (flags & TF_SEG_OPTS_WND_SCALE ? LWIP_TCP_OPT_LEN_WS_OUT : 0)
+priv/tcp_priv.h:291:
+priv/tcp_priv.h:292:/** This returns a TCP header option for MSS in an u32_t */
+priv/tcp_priv.h:293:#define TCP_BUILD_MSS_OPTION(mss) lwip_htonl(0x02040000 | ((mss) & 0xFFFF))
+priv/tcp_priv.h:294:
+priv/tcp_priv.h:295:#if LWIP_WND_SCALE
+priv/tcp_priv.h:296:#define TCPWNDSIZE_F       U32_F
+priv/tcp_priv.h:297:#define TCPWND_MAX         0xFFFFFFFFU
+priv/tcp_priv.h:298:#define TCPWND_CHECK16(x)  LWIP_ASSERT("window size > 0xFFFF", (x) <= 0xFFFF)
+priv/tcp_priv.h:299:#define TCPWND_MIN16(x)    ((u16_t)LWIP_MIN((x), 0xFFFF))
+priv/tcp_priv.h:300:#else /* LWIP_WND_SCALE */
+priv/tcp_priv.h:301:#define TCPWNDSIZE_F       U16_F
+priv/tcp_priv.h:302:#define TCPWND_MAX         0xFFFFU
+priv/tcp_priv.h:303:#define TCPWND_CHECK16(x)
+priv/tcp_priv.h:304:#define TCPWND_MIN16(x)    x
+priv/tcp_priv.h:305:#endif /* LWIP_WND_SCALE */
+priv/tcp_priv.h:306:
+priv/tcp_priv.h:307:/* Global variables: */
+priv/tcp_priv.h:308:extern struct tcp_pcb *tcp_input_pcb;
+priv/tcp_priv.h:309:extern u32_t tcp_ticks;
+priv/tcp_priv.h:310:extern u8_t tcp_active_pcbs_changed;
+priv/tcp_priv.h:311:
+priv/tcp_priv.h:312:/* The TCP PCB lists. */
+priv/tcp_priv.h:313:union tcp_listen_pcbs_t { /* List of all TCP PCBs in LISTEN state. */
+priv/tcp_priv.h:314:  struct tcp_pcb_listen *listen_pcbs;
+priv/tcp_priv.h:315:  struct tcp_pcb *pcbs;
+priv/tcp_priv.h:316:};
+priv/tcp_priv.h:317:extern struct tcp_pcb *tcp_bound_pcbs;
+priv/tcp_priv.h:318:extern union tcp_listen_pcbs_t tcp_listen_pcbs;
+priv/tcp_priv.h:319:extern struct tcp_pcb *tcp_active_pcbs;  /* List of all TCP PCBs that are in a
+priv/tcp_priv.h:320:              state in which they accept or send
+priv/tcp_priv.h:321:              data. */
+priv/tcp_priv.h:322:extern struct tcp_pcb *tcp_tw_pcbs;      /* List of all TCP PCBs in TIME-WAIT. */
+priv/tcp_priv.h:323:
+priv/tcp_priv.h:324:#define NUM_TCP_PCB_LISTS_NO_TIME_WAIT  3
+priv/tcp_priv.h:325:#define NUM_TCP_PCB_LISTS               4
+priv/tcp_priv.h:326:extern struct tcp_pcb ** const tcp_pcb_lists[NUM_TCP_PCB_LISTS];
+priv/tcp_priv.h:327:
+priv/tcp_priv.h:328:/* Axioms about the above lists:
+priv/tcp_priv.h:329:   1) Every TCP PCB that is not CLOSED is in one of the lists.
+priv/tcp_priv.h:330:   2) A PCB is only in one of the lists.
+priv/tcp_priv.h:331:   3) All PCBs in the tcp_listen_pcbs list is in LISTEN state.
+priv/tcp_priv.h:332:   4) All PCBs in the tcp_tw_pcbs list is in TIME-WAIT state.
+priv/tcp_priv.h:333:*/
+priv/tcp_priv.h:334:/* Define two macros, TCP_REG and TCP_RMV that registers a TCP PCB
+priv/tcp_priv.h:335:   with a PCB list or removes a PCB from a list, respectively. */
+priv/tcp_priv.h:336:#ifndef TCP_DEBUG_PCB_LISTS
+priv/tcp_priv.h:337:#define TCP_DEBUG_PCB_LISTS 0
+priv/tcp_priv.h:338:#endif
+priv/tcp_priv.h:339:#if TCP_DEBUG_PCB_LISTS
+priv/tcp_priv.h:340:#define TCP_REG(pcbs, npcb) do {\
+priv/tcp_priv.h:341:                            struct tcp_pcb *tcp_tmp_pcb; \
+priv/tcp_priv.h:342:                            LWIP_DEBUGF(TCP_DEBUG, ("TCP_REG %p local port %d\n", (npcb), (npcb)->local_port)); \
+priv/tcp_priv.h:343:                            for (tcp_tmp_pcb = *(pcbs); \
+priv/tcp_priv.h:344:          tcp_tmp_pcb != NULL; \
+priv/tcp_priv.h:345:        tcp_tmp_pcb = tcp_tmp_pcb->next) { \
+priv/tcp_priv.h:346:                                LWIP_ASSERT("TCP_REG: already registered\n", tcp_tmp_pcb != (npcb)); \
+priv/tcp_priv.h:347:                            } \
+priv/tcp_priv.h:348:                            LWIP_ASSERT("TCP_REG: pcb->state != CLOSED", ((pcbs) == &tcp_bound_pcbs) || ((npcb)->state != CLOSED)); \
+priv/tcp_priv.h:349:                            (npcb)->next = *(pcbs); \
+priv/tcp_priv.h:350:                            LWIP_ASSERT("TCP_REG: npcb->next != npcb", (npcb)->next != (npcb)); \
+priv/tcp_priv.h:351:                            *(pcbs) = (npcb); \
+priv/tcp_priv.h:352:                            LWIP_ASSERT("TCP_RMV: tcp_pcbs sane", tcp_pcbs_sane()); \
+priv/tcp_priv.h:353:              tcp_timer_needed(); \
+priv/tcp_priv.h:354:                            } while(0)
+priv/tcp_priv.h:355:#define TCP_RMV(pcbs, npcb) do { \
+priv/tcp_priv.h:356:                            struct tcp_pcb *tcp_tmp_pcb; \
+priv/tcp_priv.h:357:                            LWIP_ASSERT("TCP_RMV: pcbs != NULL", *(pcbs) != NULL); \
+priv/tcp_priv.h:358:                            LWIP_DEBUGF(TCP_DEBUG, ("TCP_RMV: removing %p from %p\n", (npcb), *(pcbs))); \
+priv/tcp_priv.h:359:                            if(*(pcbs) == (npcb)) { \
+priv/tcp_priv.h:360:                               *(pcbs) = (*pcbs)->next; \
+priv/tcp_priv.h:361:                            } else for (tcp_tmp_pcb = *(pcbs); tcp_tmp_pcb != NULL; tcp_tmp_pcb = tcp_tmp_pcb->next) { \
+priv/tcp_priv.h:362:                               if(tcp_tmp_pcb->next == (npcb)) { \
+priv/tcp_priv.h:363:                                  tcp_tmp_pcb->next = (npcb)->next; \
+priv/tcp_priv.h:364:                                  break; \
+priv/tcp_priv.h:365:                               } \
+priv/tcp_priv.h:366:                            } \
+priv/tcp_priv.h:367:                            (npcb)->next = NULL; \
+priv/tcp_priv.h:368:                            LWIP_ASSERT("TCP_RMV: tcp_pcbs sane", tcp_pcbs_sane()); \
+priv/tcp_priv.h:369:                            LWIP_DEBUGF(TCP_DEBUG, ("TCP_RMV: removed %p from %p\n", (npcb), *(pcbs))); \
+priv/tcp_priv.h:370:                            } while(0)
+priv/tcp_priv.h:371:
+priv/tcp_priv.h:372:#else /* LWIP_DEBUG */
+priv/tcp_priv.h:373:
+priv/tcp_priv.h:374:#define TCP_REG(pcbs, npcb)                        \
+priv/tcp_priv.h:375:  do {                                             \
+priv/tcp_priv.h:376:    (npcb)->next = *pcbs;                          \
+priv/tcp_priv.h:377:    *(pcbs) = (npcb);                              \
+priv/tcp_priv.h:378:    tcp_timer_needed();                            \
+priv/tcp_priv.h:379:  } while (0)
+priv/tcp_priv.h:380:
+priv/tcp_priv.h:381:#define TCP_RMV(pcbs, npcb)                        \
+priv/tcp_priv.h:382:  do {                                             \
+priv/tcp_priv.h:383:    if(*(pcbs) == (npcb)) {                        \
+priv/tcp_priv.h:384:      (*(pcbs)) = (*pcbs)->next;                   \
+priv/tcp_priv.h:385:    }                                              \
+priv/tcp_priv.h:386:    else {                                         \
+priv/tcp_priv.h:387:      struct tcp_pcb *tcp_tmp_pcb;                 \
+priv/tcp_priv.h:388:      for (tcp_tmp_pcb = *pcbs;                    \
+priv/tcp_priv.h:389:          tcp_tmp_pcb != NULL;                     \
+priv/tcp_priv.h:390:          tcp_tmp_pcb = tcp_tmp_pcb->next) {       \
+priv/tcp_priv.h:391:        if(tcp_tmp_pcb->next == (npcb)) {          \
+priv/tcp_priv.h:392:          tcp_tmp_pcb->next = (npcb)->next;        \
+priv/tcp_priv.h:393:          break;                                   \
+priv/tcp_priv.h:394:        }                                          \
+priv/tcp_priv.h:395:      }                                            \
+priv/tcp_priv.h:396:    }                                              \
+priv/tcp_priv.h:397:    (npcb)->next = NULL;                           \
+priv/tcp_priv.h:398:  } while(0)
+priv/tcp_priv.h:399:
+priv/tcp_priv.h:400:#endif /* LWIP_DEBUG */
+priv/tcp_priv.h:401:
+priv/tcp_priv.h:402:#define TCP_REG_ACTIVE(npcb)                       \
+priv/tcp_priv.h:403:  do {                                             \
+priv/tcp_priv.h:404:    TCP_REG(&tcp_active_pcbs, npcb);               \
+priv/tcp_priv.h:405:    tcp_active_pcbs_changed = 1;                   \
+priv/tcp_priv.h:406:  } while (0)
+priv/tcp_priv.h:407:
+priv/tcp_priv.h:408:#define TCP_RMV_ACTIVE(npcb)                       \
+priv/tcp_priv.h:409:  do {                                             \
+priv/tcp_priv.h:410:    TCP_RMV(&tcp_active_pcbs, npcb);               \
+priv/tcp_priv.h:411:    tcp_active_pcbs_changed = 1;                   \
+priv/tcp_priv.h:412:  } while (0)
+priv/tcp_priv.h:413:
+priv/tcp_priv.h:414:#define TCP_PCB_REMOVE_ACTIVE(pcb)                 \
+priv/tcp_priv.h:415:  do {                                             \
+priv/tcp_priv.h:416:    tcp_pcb_remove(&tcp_active_pcbs, pcb);         \
+priv/tcp_priv.h:417:    tcp_active_pcbs_changed = 1;                   \
+priv/tcp_priv.h:418:  } while (0)
+priv/tcp_priv.h:419:
+priv/tcp_priv.h:420:
+priv/tcp_priv.h:421:/* Internal functions: */
+priv/tcp_priv.h:422:struct tcp_pcb *tcp_pcb_copy(struct tcp_pcb *pcb);
+priv/tcp_priv.h:423:void tcp_pcb_purge(struct tcp_pcb *pcb);
+priv/tcp_priv.h:424:void tcp_pcb_remove(struct tcp_pcb **pcblist, struct tcp_pcb *pcb);
+priv/tcp_priv.h:425:
+priv/tcp_priv.h:426:void tcp_segs_free(struct tcp_seg *seg);
+priv/tcp_priv.h:427:void tcp_seg_free(struct tcp_seg *seg);
+priv/tcp_priv.h:428:struct tcp_seg *tcp_seg_copy(struct tcp_seg *seg);
+priv/tcp_priv.h:429:
+priv/tcp_priv.h:430:#define tcp_ack(pcb)                               \
+priv/tcp_priv.h:431:  do {                                             \
+priv/tcp_priv.h:432:    if((pcb)->flags & TF_ACK_DELAY) {              \
+priv/tcp_priv.h:433:      (pcb)->flags &= ~TF_ACK_DELAY;               \
+priv/tcp_priv.h:434:      (pcb)->flags |= TF_ACK_NOW;                  \
+priv/tcp_priv.h:435:    }                                              \
+priv/tcp_priv.h:436:    else {                                         \
+priv/tcp_priv.h:437:      (pcb)->flags |= TF_ACK_DELAY;                \
+priv/tcp_priv.h:438:    }                                              \
+priv/tcp_priv.h:439:  } while (0)
+priv/tcp_priv.h:440:
+priv/tcp_priv.h:441:#define tcp_ack_now(pcb)                           \
+priv/tcp_priv.h:442:  do {                                             \
+priv/tcp_priv.h:443:    (pcb)->flags |= TF_ACK_NOW;                    \
+priv/tcp_priv.h:444:  } while (0)
+priv/tcp_priv.h:445:
+priv/tcp_priv.h:446:err_t tcp_send_fin(struct tcp_pcb *pcb);
+priv/tcp_priv.h:447:err_t tcp_enqueue_flags(struct tcp_pcb *pcb, u8_t flags);
+priv/tcp_priv.h:448:
+priv/tcp_priv.h:449:void tcp_rexmit_seg(struct tcp_pcb *pcb, struct tcp_seg *seg);
+priv/tcp_priv.h:450:
+priv/tcp_priv.h:451:void tcp_rst(u32_t seqno, u32_t ackno,
+priv/tcp_priv.h:452:       const ip_addr_t *local_ip, const ip_addr_t *remote_ip,
+priv/tcp_priv.h:453:       u16_t local_port, u16_t remote_port);
+priv/tcp_priv.h:454:
+priv/tcp_priv.h:455:u32_t tcp_next_iss(void);
+priv/tcp_priv.h:456:
+priv/tcp_priv.h:457:err_t tcp_keepalive(struct tcp_pcb *pcb);
+priv/tcp_priv.h:458:err_t tcp_zero_window_probe(struct tcp_pcb *pcb);
+priv/tcp_priv.h:459:void  tcp_trigger_input_pcb_close(void);
+priv/tcp_priv.h:460:
+priv/tcp_priv.h:461:#if TCP_CALCULATE_EFF_SEND_MSS
+priv/tcp_priv.h:462:u16_t tcp_eff_send_mss_impl(u16_t sendmss, const ip_addr_t *dest
+priv/tcp_priv.h:463:#if LWIP_IPV6 || LWIP_IPV4_SRC_ROUTING
+priv/tcp_priv.h:464:                           , const ip_addr_t *src
+priv/tcp_priv.h:465:#endif /* LWIP_IPV6 || LWIP_IPV4_SRC_ROUTING */
+priv/tcp_priv.h:466:                           );
+priv/tcp_priv.h:467:#if LWIP_IPV6 || LWIP_IPV4_SRC_ROUTING
+priv/tcp_priv.h:468:#define tcp_eff_send_mss(sendmss, src, dest) tcp_eff_send_mss_impl(sendmss, dest, src)
+priv/tcp_priv.h:469:#else /* LWIP_IPV6 || LWIP_IPV4_SRC_ROUTING */
+priv/tcp_priv.h:470:#define tcp_eff_send_mss(sendmss, src, dest) tcp_eff_send_mss_impl(sendmss, dest)
+priv/tcp_priv.h:471:#endif /* LWIP_IPV6 || LWIP_IPV4_SRC_ROUTING */
+priv/tcp_priv.h:472:#endif /* TCP_CALCULATE_EFF_SEND_MSS */
+priv/tcp_priv.h:473:
+priv/tcp_priv.h:474:#if LWIP_CALLBACK_API
+priv/tcp_priv.h:475:err_t tcp_recv_null(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err);
+priv/tcp_priv.h:476:#endif /* LWIP_CALLBACK_API */
+priv/tcp_priv.h:477:
+priv/tcp_priv.h:478:#if TCP_DEBUG || TCP_INPUT_DEBUG || TCP_OUTPUT_DEBUG
+priv/tcp_priv.h:479:void tcp_debug_print(struct tcp_hdr *tcphdr);
+priv/tcp_priv.h:480:void tcp_debug_print_flags(u8_t flags);
+priv/tcp_priv.h:481:void tcp_debug_print_state(enum tcp_state s);
+priv/tcp_priv.h:482:void tcp_debug_print_pcbs(void);
+priv/tcp_priv.h:483:s16_t tcp_pcbs_sane(void);
+priv/tcp_priv.h:484:#else
+priv/tcp_priv.h:485:#  define tcp_debug_print(tcphdr)
+priv/tcp_priv.h:486:#  define tcp_debug_print_flags(flags)
+priv/tcp_priv.h:487:#  define tcp_debug_print_state(s)
+priv/tcp_priv.h:488:#  define tcp_debug_print_pcbs()
+priv/tcp_priv.h:489:#  define tcp_pcbs_sane() 1
+priv/tcp_priv.h:490:#endif /* TCP_DEBUG */
+priv/tcp_priv.h:491:
+priv/tcp_priv.h:492:/** External function (implemented in timers.c), called when TCP detects
+priv/tcp_priv.h:493: * that a timer is needed (i.e. active- or time-wait-pcb found). */
+priv/tcp_priv.h:494:void tcp_timer_needed(void);
+priv/tcp_priv.h:495:
+priv/tcp_priv.h:496:void tcp_netif_ip_addr_changed(const ip_addr_t* old_addr, const ip_addr_t* new_addr);
+priv/tcp_priv.h:497:
+priv/tcp_priv.h:498:#ifdef __cplusplus
+priv/tcp_priv.h:499:}
+priv/tcp_priv.h:500:#endif
+priv/tcp_priv.h:501:
+priv/tcp_priv.h:502:#endif /* LWIP_TCP */
+priv/memp_std.h:49:#if LWIP_TCP
+priv/memp_std.h:50:LWIP_MEMPOOL(TCP_PCB,        MEMP_NUM_TCP_PCB,         sizeof(struct tcp_pcb),        "TCP_PCB")
+priv/memp_std.h:51:LWIP_MEMPOOL(TCP_PCB_LISTEN, MEMP_NUM_TCP_PCB_LISTEN,  sizeof(struct tcp_pcb_listen), "TCP_PCB_LISTEN")
+priv/memp_std.h:52:LWIP_MEMPOOL(TCP_SEG,        MEMP_NUM_TCP_SEG,         sizeof(struct tcp_seg),        "TCP_SEG")
+priv/memp_std.h:53:#endif /* LWIP_TCP */
+priv/memp_std.h:54:
+priv/memp_std.h:55:#if LWIP_IPV4 && IP_REASSEMBLY
+priv/memp_std.h:56:LWIP_MEMPOOL(REASSDATA,      MEMP_NUM_REASSDATA,       sizeof(struct ip_reassdata),   "REASSDATA")
+priv/memp_std.h:57:#endif /* LWIP_IPV4 && IP_REASSEMBLY */
+priv/memp_std.h:58:#if (IP_FRAG && !LWIP_NETIF_TX_SINGLE_PBUF) || (LWIP_IPV6 && LWIP_IPV6_FRAG)
+priv/memp_std.h:59:LWIP_MEMPOOL(FRAG_PBUF,      MEMP_NUM_FRAG_PBUF,       sizeof(struct pbuf_custom_ref),"FRAG_PBUF")
+priv/memp_std.h:60:#endif /* IP_FRAG && !LWIP_NETIF_TX_SINGLE_PBUF || (LWIP_IPV6 && LWIP_IPV6_FRAG) */
+priv/memp_std.h:61:
+priv/memp_std.h:62:#if LWIP_NETCONN || LWIP_SOCKET
+priv/memp_std.h:63:LWIP_MEMPOOL(NETBUF,         MEMP_NUM_NETBUF,          sizeof(struct netbuf),         "NETBUF")
+priv/memp_std.h:64:LWIP_MEMPOOL(NETCONN,        MEMP_NUM_NETCONN,         sizeof(struct netconn),        "NETCONN")
+priv/memp_std.h:65:#endif /* LWIP_NETCONN || LWIP_SOCKET */
+priv/memp_std.h:66:
+priv/memp_std.h:67:#if NO_SYS==0
+priv/memp_std.h:68:LWIP_MEMPOOL(TCPIP_MSG_API,  MEMP_NUM_TCPIP_MSG_API,   sizeof(struct tcpip_msg),      "TCPIP_MSG_API")
+priv/memp_std.h:69:#if LWIP_MPU_COMPATIBLE
+priv/memp_std.h:70:LWIP_MEMPOOL(API_MSG,        MEMP_NUM_API_MSG,         sizeof(struct api_msg),        "API_MSG")
+priv/memp_std.h:71:#if LWIP_DNS
+priv/memp_std.h:72:LWIP_MEMPOOL(DNS_API_MSG,    MEMP_NUM_DNS_API_MSG,     sizeof(struct dns_api_msg),    "DNS_API_MSG")
+priv/memp_std.h:73:#endif
+priv/memp_std.h:74:#if LWIP_SOCKET && !LWIP_TCPIP_CORE_LOCKING
+priv/memp_std.h:75:LWIP_MEMPOOL(SOCKET_SETGETSOCKOPT_DATA, MEMP_NUM_SOCKET_SETGETSOCKOPT_DATA, sizeof(struct lwip_setgetsockopt_data), "SOCKET_SETGETSOCKOPT_DATA")
+priv/memp_std.h:76:#endif
+priv/memp_std.h:77:#if LWIP_NETIF_API
+priv/memp_std.h:78:LWIP_MEMPOOL(NETIFAPI_MSG,   MEMP_NUM_NETIFAPI_MSG,    sizeof(struct netifapi_msg),   "NETIFAPI_MSG")
+priv/memp_std.h:79:#endif
+priv/memp_std.h:80:#endif /* LWIP_MPU_COMPATIBLE */
+priv/memp_std.h:81:#if !LWIP_TCPIP_CORE_LOCKING_INPUT
+priv/memp_std.h:82:LWIP_MEMPOOL(TCPIP_MSG_INPKT,MEMP_NUM_TCPIP_MSG_INPKT, sizeof(struct tcpip_msg),      "TCPIP_MSG_INPKT")
+priv/memp_std.h:83:#endif /* !LWIP_TCPIP_CORE_LOCKING_INPUT */
+priv/tcpip_priv.h:99:#if !LWIP_TCPIP_CORE_LOCKING
+priv/tcpip_priv.h:100:  err_t err;
+priv/tcpip_priv.h:101:#if !LWIP_NETCONN_SEM_PER_THREAD
+priv/tcpip_priv.h:102:  sys_sem_t sem;
+priv/tcpip_priv.h:103:#endif /* LWIP_NETCONN_SEM_PER_THREAD */
+priv/tcpip_priv.h:104:#else /* !LWIP_TCPIP_CORE_LOCKING */
+priv/tcpip_priv.h:105:  u8_t dummy; /* avoid empty struct :-( */
+priv/tcpip_priv.h:106:#endif /* !LWIP_TCPIP_CORE_LOCKING */
+priv/tcpip_priv.h:107:};
+priv/tcpip_priv.h:108:typedef err_t (*tcpip_api_call_fn)(struct tcpip_api_call_data* call);
+priv/tcpip_priv.h:109:err_t tcpip_api_call(tcpip_api_call_fn fn, struct tcpip_api_call_data *call);
+priv/tcpip_priv.h:110:
+priv/tcpip_priv.h:111:enum tcpip_msg_type {
+priv/tcpip_priv.h:112:  TCPIP_MSG_API,
+priv/tcpip_priv.h:113:  TCPIP_MSG_API_CALL,
+priv/tcpip_priv.h:114:  TCPIP_MSG_INPKT,
+priv/tcpip_priv.h:115:#if LWIP_TCPIP_TIMEOUT && LWIP_TIMERS
+priv/tcpip_priv.h:116:  TCPIP_MSG_TIMEOUT,
+priv/tcpip_priv.h:117:  TCPIP_MSG_UNTIMEOUT,
+priv/tcpip_priv.h:118:#endif /* LWIP_TCPIP_TIMEOUT && LWIP_TIMERS */
+priv/tcpip_priv.h:119:  TCPIP_MSG_CALLBACK,
+priv/tcpip_priv.h:120:  TCPIP_MSG_CALLBACK_STATIC
+priv/tcpip_priv.h:121:};
+priv/tcpip_priv.h:122:
+priv/tcpip_priv.h:123:struct tcpip_msg {
+priv/tcpip_priv.h:124:  enum tcpip_msg_type type;
+priv/tcpip_priv.h:125:  union {
+priv/tcpip_priv.h:126:    struct {
+priv/tcpip_priv.h:127:      tcpip_callback_fn function;
+priv/tcpip_priv.h:128:      void* msg;
+priv/tcpip_priv.h:129:    } api_msg;
+priv/tcpip_priv.h:130:    struct {
+priv/tcpip_priv.h:131:      tcpip_api_call_fn function;
+priv/tcpip_priv.h:132:      struct tcpip_api_call_data *arg;
+priv/tcpip_priv.h:133:      sys_sem_t *sem;
+priv/tcpip_priv.h:134:    } api_call;
+priv/tcpip_priv.h:135:    struct {
+priv/tcpip_priv.h:136:      struct pbuf *p;
+priv/tcpip_priv.h:137:      struct netif *netif;
+priv/tcpip_priv.h:138:      netif_input_fn input_fn;
+priv/tcpip_priv.h:139:    } inp;
+priv/tcpip_priv.h:140:    struct {
+priv/tcpip_priv.h:141:      tcpip_callback_fn function;
+priv/tcpip_priv.h:142:      void *ctx;
+priv/tcpip_priv.h:143:    } cb;
+priv/tcpip_priv.h:144:#if LWIP_TCPIP_TIMEOUT && LWIP_TIMERS
+priv/tcpip_priv.h:145:    struct {
+priv/tcpip_priv.h:146:      u32_t msecs;
+priv/tcpip_priv.h:147:      sys_timeout_handler h;
+priv/tcpip_priv.h:148:      void *arg;
+priv/tcpip_priv.h:149:    } tmo;
+priv/tcpip_priv.h:150:#endif /* LWIP_TCPIP_TIMEOUT && LWIP_TIMERS */
+tcpip.h:52:#if LWIP_TCPIP_CORE_LOCKING
+tcpip.h:53:/** The global semaphore to lock the stack. */
+tcpip.h:54:extern sys_mutex_t lock_tcpip_core;
+tcpip.h:55:/** Lock lwIP core mutex (needs @ref LWIP_TCPIP_CORE_LOCKING 1) */
+tcpip.h:56:#define LOCK_TCPIP_CORE()     sys_mutex_lock(&lock_tcpip_core)
+tcpip.h:57:/** Unlock lwIP core mutex (needs @ref LWIP_TCPIP_CORE_LOCKING 1) */
+tcpip.h:58:#define UNLOCK_TCPIP_CORE()   sys_mutex_unlock(&lock_tcpip_core)
+tcpip.h:59:#else /* LWIP_TCPIP_CORE_LOCKING */
+tcpip.h:60:#define LOCK_TCPIP_CORE()
+tcpip.h:61:#define UNLOCK_TCPIP_CORE()
+tcpip.h:62:#endif /* LWIP_TCPIP_CORE_LOCKING */
+tcpip.h:63:
+tcpip.h:64:struct pbuf;
+tcpip.h:65:struct netif;
+tcpip.h:66:
+tcpip.h:67:/** Function prototype for the init_done function passed to tcpip_init */
+tcpip.h:68:typedef void (*tcpip_init_done_fn)(void *arg);
+tcpip.h:69:/** Function prototype for functions passed to tcpip_callback() */
+tcpip.h:70:typedef void (*tcpip_callback_fn)(void *ctx);
+tcpip.h:71:
+tcpip.h:72:/* Forward declarations */
+tcpip.h:73:struct tcpip_callback_msg;
+tcpip.h:74:
+tcpip.h:75:void   tcpip_init(tcpip_init_done_fn tcpip_init_done, void *arg);
+tcpip.h:76:
+tcpip.h:77:err_t  tcpip_inpkt(struct pbuf *p, struct netif *inp, netif_input_fn input_fn);
+tcpip.h:78:err_t  tcpip_input(struct pbuf *p, struct netif *inp);
+tcpip.h:79:
+tcpip.h:80:err_t  tcpip_callback_with_block(tcpip_callback_fn function, void *ctx, u8_t block);
+tcpip.h:81:/**
+tcpip.h:82: * @ingroup lwip_os
+tcpip.h:83: * @see tcpip_callback_with_block
+tcpip.h:84: */
+tcpip.h:85:#define tcpip_callback(f, ctx)  tcpip_callback_with_block(f, ctx, 1)
+tcpip.h:86:
+tcpip.h:87:struct tcpip_callback_msg* tcpip_callbackmsg_new(tcpip_callback_fn function, void *ctx);
+tcpip.h:88:void   tcpip_callbackmsg_delete(struct tcpip_callback_msg* msg);
+tcpip.h:89:err_t  tcpip_trycallback(struct tcpip_callback_msg* msg);
+tcpip.h:90:
+tcpip.h:91:/* free pbufs or heap memory from another context without blocking */
+tcpip.h:92:err_t  pbuf_free_callback(struct pbuf *p);
+tcpip.h:93:err_t  mem_free_callback(void *m);
+tcpip.h:94:
+tcpip.h:95:#if LWIP_TCPIP_TIMEOUT && LWIP_TIMERS
+tcpip.h:96:err_t  tcpip_timeout(u32_t msecs, sys_timeout_handler h, void *arg);
+tcpip.h:97:err_t  tcpip_untimeout(sys_timeout_handler h, void *arg);
+tcpip.h:98:#endif /* LWIP_TCPIP_TIMEOUT && LWIP_TIMERS */
+tcp.h:43:#if LWIP_TCP /* don't build if not configured for use in lwipopts.h */
+tcp.h:44:
+tcp.h:45:#include "lwip/mem.h"
+tcp.h:46:#include "lwip/pbuf.h"
+tcp.h:47:#include "lwip/ip.h"
+tcp.h:48:#include "lwip/icmp.h"
+tcp.h:49:#include "lwip/err.h"
+tcp.h:50:#include "lwip/ip6.h"
+tcp.h:51:#include "lwip/ip6_addr.h"
+tcp.h:52:
+tcp.h:53:#ifdef __cplusplus
+tcp.h:54:extern "C" {
+tcp.h:55:#endif
+tcp.h:56:
+tcp.h:57:struct tcp_pcb;
+tcp.h:58:
+tcp.h:59:/** Function prototype for tcp accept callback functions. Called when a new
+tcp.h:60: * connection can be accepted on a listening pcb.
+tcp.h:61: *
+tcp.h:62: * @param arg Additional argument to pass to the callback function (@see tcp_arg())
+tcp.h:63: * @param newpcb The new connection pcb
+tcp.h:64: * @param err An error code if there has been an error accepting.
+tcp.h:65: *            Only return ERR_ABRT if you have called tcp_abort from within the
+tcp.h:66: *            callback function!
+tcp.h:67: */
+tcp.h:68:typedef err_t (*tcp_accept_fn)(void *arg, struct tcp_pcb *newpcb, err_t err);
+tcp.h:69:
+tcp.h:70:/** Function prototype for tcp receive callback functions. Called when data has
+tcp.h:71: * been received.
+tcp.h:72: *
+tcp.h:73: * @param arg Additional argument to pass to the callback function (@see tcp_arg())
+tcp.h:74: * @param tpcb The connection pcb which received data
+tcp.h:75: * @param p The received data (or NULL when the connection has been closed!)
+tcp.h:76: * @param err An error code if there has been an error receiving
+tcp.h:77: *            Only return ERR_ABRT if you have called tcp_abort from within the
+tcp.h:78: *            callback function!
+tcp.h:79: */
+tcp.h:80:typedef err_t (*tcp_recv_fn)(void *arg, struct tcp_pcb *tpcb,
+tcp.h:81:                             struct pbuf *p, err_t err);
+tcp.h:82:
+tcp.h:83:/** Function prototype for tcp sent callback functions. Called when sent data has
+tcp.h:84: * been acknowledged by the remote side. Use it to free corresponding resources.
+tcp.h:85: * This also means that the pcb has now space available to send new data.
+tcp.h:86: *
+tcp.h:87: * @param arg Additional argument to pass to the callback function (@see tcp_arg())
+tcp.h:88: * @param tpcb The connection pcb for which data has been acknowledged
+tcp.h:89: * @param len The amount of bytes acknowledged
+tcp.h:90: * @return ERR_OK: try to send some data by calling tcp_output
+tcp.h:91: *            Only return ERR_ABRT if you have called tcp_abort from within the
+tcp.h:92: *            callback function!
+tcp.h:93: */
+tcp.h:94:typedef err_t (*tcp_sent_fn)(void *arg, struct tcp_pcb *tpcb,
+tcp.h:95:                              u16_t len);
+tcp.h:96:
+tcp.h:97:/** Function prototype for tcp poll callback functions. Called periodically as
+tcp.h:98: * specified by @see tcp_poll.
+tcp.h:99: *
+tcp.h:100: * @param arg Additional argument to pass to the callback function (@see tcp_arg())
+tcp.h:101: * @param tpcb tcp pcb
+tcp.h:102: * @return ERR_OK: try to send some data by calling tcp_output
+tcp.h:103: *            Only return ERR_ABRT if you have called tcp_abort from within the
+tcp.h:104: *            callback function!
+tcp.h:105: */
+tcp.h:106:typedef err_t (*tcp_poll_fn)(void *arg, struct tcp_pcb *tpcb);
+tcp.h:107:
+tcp.h:108:/** Function prototype for tcp error callback functions. Called when the pcb
+tcp.h:109: * receives a RST or is unexpectedly closed for any other reason.
+tcp.h:110: *
+tcp.h:111: * @note The corresponding pcb is already freed when this callback is called!
+tcp.h:112: *
+tcp.h:113: * @param arg Additional argument to pass to the callback function (@see tcp_arg())
+tcp.h:114: * @param err Error code to indicate why the pcb has been closed
+tcp.h:115: *            ERR_ABRT: aborted through tcp_abort or by a TCP timer
+tcp.h:116: *            ERR_RST: the connection was reset by the remote host
+tcp.h:117: */
+tcp.h:118:typedef void  (*tcp_err_fn)(void *arg, err_t err);
+tcp.h:119:
+tcp.h:120:/** Function prototype for tcp connected callback functions. Called when a pcb
+tcp.h:121: * is connected to the remote side after initiating a connection attempt by
+tcp.h:122: * calling tcp_connect().
+tcp.h:123: *
+tcp.h:124: * @param arg Additional argument to pass to the callback function (@see tcp_arg())
+tcp.h:125: * @param tpcb The connection pcb which is connected
+tcp.h:126: * @param err An unused error code, always ERR_OK currently ;-) @todo!
+tcp.h:127: *            Only return ERR_ABRT if you have called tcp_abort from within the
+tcp.h:128: *            callback function!
+tcp.h:129: *
+tcp.h:130: * @note When a connection attempt fails, the error callback is currently called!
+tcp.h:131: */
+tcp.h:132:typedef err_t (*tcp_connected_fn)(void *arg, struct tcp_pcb *tpcb, err_t err);
+tcp.h:133:
+tcp.h:134:#if LWIP_WND_SCALE
+tcp.h:135:#define RCV_WND_SCALE(pcb, wnd) (((wnd) >> (pcb)->rcv_scale))
+tcp.h:136:#define SND_WND_SCALE(pcb, wnd) (((wnd) << (pcb)->snd_scale))
+tcp.h:137:#define TCPWND16(x)             ((u16_t)LWIP_MIN((x), 0xFFFF))
+tcp.h:138:#define TCP_WND_MAX(pcb)        ((tcpwnd_size_t)(((pcb)->flags & TF_WND_SCALE) ? TCP_WND : TCPWND16(TCP_WND)))
+tcp.h:139:typedef u32_t tcpwnd_size_t;
+tcp.h:140:#else
+tcp.h:141:#define RCV_WND_SCALE(pcb, wnd) (wnd)
+tcp.h:142:#define SND_WND_SCALE(pcb, wnd) (wnd)
+tcp.h:143:#define TCPWND16(x)             (x)
+tcp.h:144:#define TCP_WND_MAX(pcb)        TCP_WND
+tcp.h:145:typedef u16_t tcpwnd_size_t;
+tcp.h:146:#endif
+tcp.h:147:
+tcp.h:148:#if LWIP_WND_SCALE || TCP_LISTEN_BACKLOG
+tcp.h:149:typedef u16_t tcpflags_t;
+tcp.h:150:#else
+tcp.h:151:typedef u8_t tcpflags_t;
+tcp.h:152:#endif
+tcp.h:153:
+tcp.h:154:enum tcp_state {
+tcp.h:155:  CLOSED      = 0,
+tcp.h:156:  LISTEN      = 1,
+tcp.h:157:  SYN_SENT    = 2,
+tcp.h:158:  SYN_RCVD    = 3,
+tcp.h:159:  ESTABLISHED = 4,
+tcp.h:160:  FIN_WAIT_1  = 5,
+tcp.h:161:  FIN_WAIT_2  = 6,
+tcp.h:162:  CLOSE_WAIT  = 7,
+tcp.h:163:  CLOSING     = 8,
+tcp.h:164:  LAST_ACK    = 9,
+tcp.h:165:  TIME_WAIT   = 10
+tcp.h:166:};
+tcp.h:167:
+tcp.h:168:/**
+tcp.h:169: * members common to struct tcp_pcb and struct tcp_listen_pcb
+tcp.h:170: */
+tcp.h:171:#define TCP_PCB_COMMON(type) \
+tcp.h:172:  type *next; /* for the linked list */ \
+tcp.h:173:  void *callback_arg; \
+tcp.h:174:  enum tcp_state state; /* TCP state */ \
+tcp.h:175:  u8_t prio; \
+tcp.h:176:  /* ports are in host byte order */ \
+tcp.h:177:  u16_t local_port
+tcp.h:178:
+tcp.h:179:
+tcp.h:180:/** the TCP protocol control block for listening pcbs */
+tcp.h:181:struct tcp_pcb_listen {
+tcp.h:182:/** Common members of all PCB types */
+tcp.h:183:  IP_PCB;
+tcp.h:184:/** Protocol specific PCB members */
+tcp.h:185:  TCP_PCB_COMMON(struct tcp_pcb_listen);
+tcp.h:186:
+tcp.h:187:#if LWIP_CALLBACK_API
+tcp.h:188:  /* Function to call when a listener has been connected. */
+tcp.h:189:  tcp_accept_fn accept;
+tcp.h:190:#endif /* LWIP_CALLBACK_API */
+tcp.h:191:
+tcp.h:192:#if TCP_LISTEN_BACKLOG
+tcp.h:193:  u8_t backlog;
+tcp.h:194:  u8_t accepts_pending;
+tcp.h:195:#endif /* TCP_LISTEN_BACKLOG */
+tcp.h:196:};
+tcp.h:197:
+tcp.h:198:
+tcp.h:199:/** the TCP protocol control block */
+tcp.h:200:struct tcp_pcb {
+tcp.h:201:/** common PCB members */
+tcp.h:202:  IP_PCB;
+tcp.h:203:/** protocol specific PCB members */
+tcp.h:204:  TCP_PCB_COMMON(struct tcp_pcb);
+tcp.h:205:
+tcp.h:206:  /* ports are in host byte order */
+tcp.h:207:  u16_t remote_port;
+tcp.h:208:
+tcp.h:209:  tcpflags_t flags;
+tcp.h:210:#define TF_ACK_DELAY   0x01U   /* Delayed ACK. */
+tcp.h:211:#define TF_ACK_NOW     0x02U   /* Immediate ACK. */
+tcp.h:212:#define TF_INFR        0x04U   /* In fast recovery. */
+tcp.h:213:#define TF_TIMESTAMP   0x08U   /* Timestamp option enabled */
+tcp.h:214:#define TF_RXCLOSED    0x10U   /* rx closed by tcp_shutdown */
+tcp.h:215:#define TF_FIN         0x20U   /* Connection was closed locally (FIN segment enqueued). */
+tcp.h:216:#define TF_NODELAY     0x40U   /* Disable Nagle algorithm */
+tcp.h:217:#define TF_NAGLEMEMERR 0x80U   /* nagle enabled, memerr, try to output to prevent delayed ACK to happen */
+tcp.h:218:#if LWIP_WND_SCALE
+tcp.h:219:#define TF_WND_SCALE   0x0100U /* Window Scale option enabled */
+tcp.h:220:#endif
+tcp.h:221:#if TCP_LISTEN_BACKLOG
+tcp.h:222:#define TF_BACKLOGPEND 0x0200U /* If this is set, a connection pcb has increased the backlog on its listener */
+tcp.h:223:#endif
+tcp.h:224:
+tcp.h:225:  /* the rest of the fields are in host byte order
+tcp.h:226:     as we have to do some math with them */
+tcp.h:227:
+tcp.h:228:  /* Timers */
+tcp.h:229:  u8_t polltmr, pollinterval;
+tcp.h:230:  u8_t last_timer;
+tcp.h:231:  u32_t tmr;
+tcp.h:232:
+tcp.h:233:  /* receiver variables */
+tcp.h:234:  u32_t rcv_nxt;   /* next seqno expected */
+tcp.h:235:  tcpwnd_size_t rcv_wnd;   /* receiver window available */
+tcp.h:236:  tcpwnd_size_t rcv_ann_wnd; /* receiver window to announce */
+tcp.h:237:  u32_t rcv_ann_right_edge; /* announced right edge of window */
+tcp.h:238:
+tcp.h:239:  /* Retransmission timer. */
+tcp.h:240:  s16_t rtime;
+tcp.h:241:
+tcp.h:242:  u16_t mss;   /* maximum segment size */
+tcp.h:243:
+tcp.h:244:  /* RTT (round trip time) estimation variables */
+tcp.h:245:  u32_t rttest; /* RTT estimate in 500ms ticks */
+tcp.h:246:  u32_t rtseq;  /* sequence number being timed */
+tcp.h:247:  s16_t sa, sv; /* @todo document this */
+tcp.h:248:
+tcp.h:249:  s16_t rto;    /* retransmission time-out */
+tcp.h:250:  u8_t nrtx;    /* number of retransmissions */
+tcp.h:251:
+tcp.h:252:  /* fast retransmit/recovery */
+tcp.h:253:  u8_t dupacks;
+tcp.h:254:  u32_t lastack; /* Highest acknowledged seqno. */
+tcp.h:255:
+tcp.h:256:  /* congestion avoidance/control variables */
+tcp.h:257:  tcpwnd_size_t cwnd;
+tcp.h:258:  tcpwnd_size_t ssthresh;
+tcp.h:259:
+tcp.h:260:  /* sender variables */
+tcp.h:261:  u32_t snd_nxt;   /* next new seqno to be sent */
+tcp.h:262:  u32_t snd_wl1, snd_wl2; /* Sequence and acknowledgement numbers of last
+tcp.h:263:                             window update. */
+tcp.h:264:  u32_t snd_lbb;       /* Sequence number of next byte to be buffered. */
+tcp.h:265:  tcpwnd_size_t snd_wnd;   /* sender window */
+tcp.h:266:  tcpwnd_size_t snd_wnd_max; /* the maximum sender window announced by the remote host */
+tcp.h:267:
+tcp.h:268:  tcpwnd_size_t snd_buf;   /* Available buffer space for sending (in bytes). */
+tcp.h:269:#define TCP_SNDQUEUELEN_OVERFLOW (0xffffU-3)
+tcp.h:270:  u16_t snd_queuelen; /* Number of pbufs currently in the send buffer. */
+tcp.h:271:
+tcp.h:272:#if TCP_OVERSIZE
+tcp.h:273:  /* Extra bytes available at the end of the last pbuf in unsent. */
+tcp.h:274:  u16_t unsent_oversize;
+tcp.h:275:#endif /* TCP_OVERSIZE */
+tcp.h:276:
+tcp.h:277:  /* These are ordered by sequence number: */
+tcp.h:278:  struct tcp_seg *unsent;   /* Unsent (queued) segments. */
+tcp.h:279:  struct tcp_seg *unacked;  /* Sent but unacknowledged segments. */
+tcp.h:280:#if TCP_QUEUE_OOSEQ
+tcp.h:281:  struct tcp_seg *ooseq;    /* Received out of sequence segments. */
+tcp.h:282:#endif /* TCP_QUEUE_OOSEQ */
+tcp.h:283:
+tcp.h:284:  struct pbuf *refused_data; /* Data previously received but not yet taken by upper layer */
+tcp.h:285:
+tcp.h:286:#if LWIP_CALLBACK_API || TCP_LISTEN_BACKLOG
+tcp.h:287:  struct tcp_pcb_listen* listener;
+tcp.h:288:#endif /* LWIP_CALLBACK_API || TCP_LISTEN_BACKLOG */
+tcp.h:289:
+tcp.h:290:#if LWIP_CALLBACK_API
+tcp.h:291:  /* Function to be called when more send buffer space is available. */
+tcp.h:292:  tcp_sent_fn sent;
+tcp.h:293:  /* Function to be called when (in-sequence) data has arrived. */
+tcp.h:294:  tcp_recv_fn recv;
+tcp.h:295:  /* Function to be called when a connection has been set up. */
+tcp.h:296:  tcp_connected_fn connected;
+tcp.h:297:  /* Function which is called periodically. */
+tcp.h:298:  tcp_poll_fn poll;
+tcp.h:299:  /* Function to be called whenever a fatal error occurs. */
+tcp.h:300:  tcp_err_fn errf;
+tcp.h:301:#endif /* LWIP_CALLBACK_API */
+tcp.h:302:
+tcp.h:303:#if LWIP_TCP_TIMESTAMPS
+tcp.h:304:  u32_t ts_lastacksent;
+tcp.h:305:  u32_t ts_recent;
+tcp.h:306:#endif /* LWIP_TCP_TIMESTAMPS */
+tcp.h:307:
+tcp.h:308:  /* idle time before KEEPALIVE is sent */
+tcp.h:309:  u32_t keep_idle;
+tcp.h:310:#if LWIP_TCP_KEEPALIVE
+tcp.h:311:  u32_t keep_intvl;
+tcp.h:312:  u32_t keep_cnt;
+tcp.h:313:#endif /* LWIP_TCP_KEEPALIVE */
+tcp.h:314:
+tcp.h:315:  /* Persist timer counter */
+tcp.h:316:  u8_t persist_cnt;
+tcp.h:317:  /* Persist timer back-off */
+tcp.h:318:  u8_t persist_backoff;
+tcp.h:319:
+tcp.h:320:  /* KEEPALIVE counter */
+tcp.h:321:  u8_t keep_cnt_sent;
+tcp.h:322:
+tcp.h:323:#if LWIP_WND_SCALE
+tcp.h:324:  u8_t snd_scale;
+tcp.h:325:  u8_t rcv_scale;
+tcp.h:326:#endif
+tcp.h:327:};
+tcp.h:328:
+tcp.h:329:#if LWIP_EVENT_API
+tcp.h:330:
+tcp.h:331:enum lwip_event {
+tcp.h:332:  LWIP_EVENT_ACCEPT,
+tcp.h:333:  LWIP_EVENT_SENT,
+tcp.h:334:  LWIP_EVENT_RECV,
+tcp.h:335:  LWIP_EVENT_CONNECTED,
+tcp.h:336:  LWIP_EVENT_POLL,
+tcp.h:337:  LWIP_EVENT_ERR
+tcp.h:338:};
+tcp.h:339:
+tcp.h:340:err_t lwip_tcp_event(void *arg, struct tcp_pcb *pcb,
+tcp.h:341:         enum lwip_event,
+tcp.h:342:         struct pbuf *p,
+tcp.h:343:         u16_t size,
+tcp.h:344:         err_t err);
+tcp.h:345:
+tcp.h:346:#endif /* LWIP_EVENT_API */
+tcp.h:347:
+tcp.h:348:/* Application program's interface: */
+tcp.h:349:struct tcp_pcb * tcp_new     (void);
+tcp.h:350:struct tcp_pcb * tcp_new_ip_type (u8_t type);
+tcp.h:351:
+tcp.h:352:void             tcp_arg     (struct tcp_pcb *pcb, void *arg);
+tcp.h:353:#if LWIP_CALLBACK_API
+tcp.h:354:void             tcp_recv    (struct tcp_pcb *pcb, tcp_recv_fn recv);
+tcp.h:355:void             tcp_sent    (struct tcp_pcb *pcb, tcp_sent_fn sent);
+tcp.h:356:void             tcp_err     (struct tcp_pcb *pcb, tcp_err_fn err);
+tcp.h:357:void             tcp_accept  (struct tcp_pcb *pcb, tcp_accept_fn accept);
+tcp.h:358:#endif /* LWIP_CALLBACK_API */
+tcp.h:359:void             tcp_poll    (struct tcp_pcb *pcb, tcp_poll_fn poll, u8_t interval);
+tcp.h:360:
+tcp.h:361:#define          tcp_mss(pcb)             (((pcb)->flags & TF_TIMESTAMP) ? ((pcb)->mss - 12)  : (pcb)->mss)
+tcp.h:362:#define          tcp_sndbuf(pcb)          (TCPWND16((pcb)->snd_buf))
+tcp.h:363:#define          tcp_sndqueuelen(pcb)     ((pcb)->snd_queuelen)
+tcp.h:364:/** @ingroup tcp_raw */
+tcp.h:365:#define          tcp_nagle_disable(pcb)   ((pcb)->flags |= TF_NODELAY)
+tcp.h:366:/** @ingroup tcp_raw */
+tcp.h:367:#define          tcp_nagle_enable(pcb)    ((pcb)->flags = (tcpflags_t)((pcb)->flags & ~TF_NODELAY))
+tcp.h:368:/** @ingroup tcp_raw */
+tcp.h:369:#define          tcp_nagle_disabled(pcb)  (((pcb)->flags & TF_NODELAY) != 0)
+tcp.h:370:
+tcp.h:371:#if TCP_LISTEN_BACKLOG
+tcp.h:372:#define          tcp_backlog_set(pcb, new_backlog) do { \
+tcp.h:373:  LWIP_ASSERT("pcb->state == LISTEN (called for wrong pcb?)", (pcb)->state == LISTEN); \
+tcp.h:374:  ((struct tcp_pcb_listen *)(pcb))->backlog = ((new_backlog) ? (new_backlog) : 1); } while(0)
+tcp.h:375:void             tcp_backlog_delayed(struct tcp_pcb* pcb);
+tcp.h:376:void             tcp_backlog_accepted(struct tcp_pcb* pcb);
+tcp.h:377:#else  /* TCP_LISTEN_BACKLOG */
+tcp.h:378:#define          tcp_backlog_set(pcb, new_backlog)
+tcp.h:379:#define          tcp_backlog_delayed(pcb)
+tcp.h:380:#define          tcp_backlog_accepted(pcb)
+tcp.h:381:#endif /* TCP_LISTEN_BACKLOG */
+tcp.h:382:#define          tcp_accepted(pcb) /* compatibility define, not needed any more */
+tcp.h:383:
+tcp.h:384:void             tcp_recved  (struct tcp_pcb *pcb, u16_t len);
+tcp.h:385:err_t            tcp_bind    (struct tcp_pcb *pcb, const ip_addr_t *ipaddr,
+tcp.h:386:                              u16_t port);
+tcp.h:387:err_t            tcp_connect (struct tcp_pcb *pcb, const ip_addr_t *ipaddr,
+tcp.h:388:                              u16_t port, tcp_connected_fn connected);
+tcp.h:389:
+tcp.h:390:struct tcp_pcb * tcp_listen_with_backlog(struct tcp_pcb *pcb, u8_t backlog);
+tcp.h:391:/** @ingroup tcp_raw */
+tcp.h:392:#define          tcp_listen(pcb) tcp_listen_with_backlog(pcb, TCP_DEFAULT_LISTEN_BACKLOG)
+tcp.h:393:
+tcp.h:394:void             tcp_abort (struct tcp_pcb *pcb);
+tcp.h:395:err_t            tcp_close   (struct tcp_pcb *pcb);
+tcp.h:396:err_t            tcp_shutdown(struct tcp_pcb *pcb, int shut_rx, int shut_tx);
+tcp.h:397:
+tcp.h:398:/* Flags for "apiflags" parameter in tcp_write */
+tcp.h:399:#define TCP_WRITE_FLAG_COPY 0x01
+tcp.h:400:#define TCP_WRITE_FLAG_MORE 0x02
+tcp.h:401:
+tcp.h:402:err_t            tcp_write   (struct tcp_pcb *pcb, const void *dataptr, u16_t len,
+tcp.h:403:                              u8_t apiflags);
+tcp.h:404:
+tcp.h:405:void             tcp_setprio (struct tcp_pcb *pcb, u8_t prio);
+tcp.h:406:
+tcp.h:407:#define TCP_PRIO_MIN    1
+tcp.h:408:#define TCP_PRIO_NORMAL 64
+tcp.h:409:#define TCP_PRIO_MAX    127
+tcp.h:410:
+tcp.h:411:err_t            tcp_output  (struct tcp_pcb *pcb);
+tcp.h:412:
+tcp.h:413:
+tcp.h:414:const char* tcp_debug_state_str(enum tcp_state s);
+tcp.h:415:
+tcp.h:416:/* for compatibility with older implementation */
+tcp.h:417:#define tcp_new_ip6() tcp_new_ip_type(IPADDR_TYPE_V6)
+tcp.h:418:
+tcp.h:419:#ifdef __cplusplus
+tcp.h:420:}
+tcp.h:421:#endif
+tcp.h:422:
+tcp.h:423:#endif /* LWIP_TCP */

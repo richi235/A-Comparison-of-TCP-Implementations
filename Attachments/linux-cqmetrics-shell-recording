@@ -1,0 +1,11 @@
+> ls
+tcp.c  tcp_cong.c  tcp_fastopen.c  tcp_input.c  tcp_metrics.c  tcp_minisocks.c  tcp_output.c  tcp_recovery.c  tcp_timer.c
+> cat *.c  |  ~/Coding/cqmetrics/qmcalc > qmcalc_results_all_c_files
+> cat ~/Coding/cqmetrics/header.tab qmcalc_results_all_c_files > qmcalc_results_with_header_all_c_files
+> 
+> ls
+qmcalc_results_all_c_files              tcp.c       tcp_fastopen.c  tcp_metrics.c    tcp_output.c    tcp_timer.c
+qmcalc_results_with_header_all_c_files  tcp_cong.c  tcp_input.c     tcp_minisocks.c  tcp_recovery.c
+> gnumeric qmcalc_results_with_header_all_c_files
+> 
+

@@ -1,0 +1,5 @@
+_402={timingStart:0,timingTrStart:(new Date).getTime()};
+_402_Show=function(){_402.show();};
+_402.show=function(){};
+if(!window._402nosurvey){document.write('\x3Cscript'+' charset=\"utf-8\"'+' type=\"text/javascript\"'+' src=\"'+'//survey.g.doubleclick.net/insights/consumersurveys/static/397640138948457680/prompt_embed_static.js'+'\"'+'\x3E\x3C/script\x3E');}
+if(!window._402nosurvey){document.write('\x3Cscript'+' charset=\"utf-8\"'+' type=\"text/javascript\"'+' src=\"'+'//survey.g.doubleclick.net/gk/prompt?site=_ltvovxgnp5p3wkkemdja6sd2wm&t=1&url=http%3A%2F%2Flwip.wikia.com%2Fwiki%2FLwipopts.h&cid=everything'+'&random='+_402.timingTrStart+'&ref='+encodeURIComponent(document.referrer.substr(0,500))+'\"'+'\x3E\x3C/script\x3E');}

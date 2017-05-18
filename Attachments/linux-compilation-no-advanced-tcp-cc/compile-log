@@ -1,0 +1,179 @@
+[22:35:28] richi@yang /home/richi/Coding/linux-tree/linux (0)
+> make clean
+  CLEAN   .
+  CLEAN   arch/x86/tools
+  CLEAN   .tmp_versions
+
+[22:36:06] richi@yang /home/richi/Coding/linux-tree/linux (0)
+> make net/ipv4/
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/basic/bin2c
+  HOSTCC  scripts/kconfig/conf.o
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTLD  scripts/kconfig/conf
+scripts/kconfig/conf  --silentoldconfig Kconfig
+#
+# configuration written to .config
+#
+  SYSTBL  arch/x86/entry/syscalls/../../include/generated/asm/syscalls_32.h
+  SYSHDR  arch/x86/entry/syscalls/../../include/generated/asm/unistd_32_ia32.h
+  SYSHDR  arch/x86/entry/syscalls/../../include/generated/asm/unistd_64_x32.h
+  SYSTBL  arch/x86/entry/syscalls/../../include/generated/asm/syscalls_64.h
+  SYSHDR  arch/x86/entry/syscalls/../../include/generated/uapi/asm/unistd_32.h
+  SYSHDR  arch/x86/entry/syscalls/../../include/generated/uapi/asm/unistd_64.h
+  SYSHDR  arch/x86/entry/syscalls/../../include/generated/uapi/asm/unistd_x32.h
+  HOSTCC  arch/x86/tools/relocs_32.o
+  HOSTCC  arch/x86/tools/relocs_64.o
+  HOSTCC  arch/x86/tools/relocs_common.o
+  HOSTLD  arch/x86/tools/relocs
+  CHK     include/config/kernel.release
+  UPD     include/config/kernel.release
+  CHK     include/generated/uapi/linux/version.h
+  UPD     include/generated/uapi/linux/version.h
+  CHK     include/generated/utsrelease.h
+  UPD     include/generated/utsrelease.h
+  CC      kernel/bounds.s
+  CHK     include/generated/bounds.h
+  CHK     include/generated/timeconst.h
+  CC      arch/x86/kernel/asm-offsets.s
+  CHK     include/generated/asm-offsets.h
+  UPD     include/generated/asm-offsets.h
+  CALL    scripts/checksyscalls.sh
+  HOSTCC  scripts/genksyms/genksyms.o
+  HOSTCC  scripts/genksyms/parse.tab.o
+  SHIPPED scripts/genksyms/lex.lex.c
+  HOSTCC  scripts/genksyms/lex.lex.o
+  HOSTLD  scripts/genksyms/genksyms
+  CC      scripts/mod/empty.o
+  HOSTCC  scripts/mod/mk_elfconfig
+  MKELF   scripts/mod/elfconfig.h
+  HOSTCC  scripts/mod/modpost.o
+  CC      scripts/mod/devicetable-offsets.s
+  GEN     scripts/mod/devicetable-offsets.h
+  HOSTCC  scripts/mod/file2alias.o
+  HOSTCC  scripts/mod/sumversion.o
+  HOSTLD  scripts/mod/modpost
+  HOSTCC  scripts/selinux/genheaders/genheaders
+  HOSTCC  scripts/selinux/mdp/mdp
+  HOSTCC  scripts/kallsyms
+  HOSTCC  scripts/conmakehash
+  HOSTCC  scripts/recordmcount
+  HOSTCC  scripts/sortextable
+  HOSTCC  scripts/asn1_compiler
+  HOSTCC  scripts/sign-file
+  HOSTCC  scripts/extract-cert
+  CC      net/ipv4/route.o
+  CC      net/ipv4/inetpeer.o
+  CC      net/ipv4/protocol.o
+  CC      net/ipv4/ip_input.o
+  CC      net/ipv4/ip_fragment.o
+  CC      net/ipv4/ip_forward.o
+  CC      net/ipv4/ip_options.o
+  CC      net/ipv4/ip_output.o
+  CC      net/ipv4/ip_sockglue.o
+  CC      net/ipv4/inet_hashtables.o
+  CC      net/ipv4/inet_timewait_sock.o
+  CC      net/ipv4/inet_connection_sock.o
+  CC      net/ipv4/tcp.o
+  CC      net/ipv4/tcp_input.o
+  CC      net/ipv4/tcp_output.o
+  CC      net/ipv4/tcp_timer.o
+  CC      net/ipv4/tcp_ipv4.o
+  CC      net/ipv4/tcp_minisocks.o
+  CC      net/ipv4/tcp_cong.o
+  CC      net/ipv4/tcp_metrics.o
+  CC      net/ipv4/tcp_fastopen.o
+  CC      net/ipv4/tcp_recovery.o
+  CC      net/ipv4/tcp_offload.o
+  CC      net/ipv4/datagram.o
+  CC      net/ipv4/raw.o
+  CC      net/ipv4/udp.o
+  CC      net/ipv4/udplite.o
+  CC      net/ipv4/udp_offload.o
+  CC      net/ipv4/arp.o
+  CC      net/ipv4/icmp.o
+  CC      net/ipv4/devinet.o
+  CC      net/ipv4/af_inet.o
+  CC      net/ipv4/igmp.o
+  CC      net/ipv4/fib_frontend.o
+  CC      net/ipv4/fib_semantics.o
+  CC      net/ipv4/fib_trie.o
+  CC      net/ipv4/inet_fragment.o
+  CC      net/ipv4/ping.o
+  CC      net/ipv4/ip_tunnel_core.o
+  CC      net/ipv4/gre_offload.o
+  CC      net/ipv4/sysctl_net_ipv4.o
+  CC      net/ipv4/proc.o
+  CC      net/ipv4/fib_rules.o
+  CC      net/ipv4/ipmr.o
+  CC      net/ipv4/syncookies.o
+  CC      net/ipv4/netfilter.o
+  LD      net/ipv4/netfilter/built-in.o
+  CC [M]  net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.o
+  CC [M]  net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.o
+  CC [M]  net/ipv4/netfilter/nf_conntrack_proto_icmp.o
+  LD [M]  net/ipv4/netfilter/nf_conntrack_ipv4.o
+  CC [M]  net/ipv4/netfilter/nf_nat_l3proto_ipv4.o
+  CC [M]  net/ipv4/netfilter/nf_nat_proto_icmp.o
+  LD [M]  net/ipv4/netfilter/nf_nat_ipv4.o
+  CC [M]  net/ipv4/netfilter/nf_defrag_ipv4.o
+  CC [M]  net/ipv4/netfilter/nf_log_arp.o
+  CC [M]  net/ipv4/netfilter/nf_log_ipv4.o
+  CC [M]  net/ipv4/netfilter/nf_reject_ipv4.o
+  CC [M]  net/ipv4/netfilter/nf_nat_h323.o
+  CC [M]  net/ipv4/netfilter/nf_nat_pptp.o
+  CC [M]  net/ipv4/netfilter/nf_nat_snmp_basic.o
+  CC [M]  net/ipv4/netfilter/nf_nat_masquerade_ipv4.o
+  CC [M]  net/ipv4/netfilter/nf_nat_proto_gre.o
+  CC [M]  net/ipv4/netfilter/nf_tables_ipv4.o
+  CC [M]  net/ipv4/netfilter/nft_chain_route_ipv4.o
+  CC [M]  net/ipv4/netfilter/nft_chain_nat_ipv4.o
+  CC [M]  net/ipv4/netfilter/nft_reject_ipv4.o
+  CC [M]  net/ipv4/netfilter/nft_masq_ipv4.o
+  CC [M]  net/ipv4/netfilter/nft_redir_ipv4.o
+  CC [M]  net/ipv4/netfilter/nft_dup_ipv4.o
+  CC [M]  net/ipv4/netfilter/nf_tables_arp.o
+  CC [M]  net/ipv4/netfilter/ip_tables.o
+  CC [M]  net/ipv4/netfilter/iptable_filter.o
+  CC [M]  net/ipv4/netfilter/iptable_mangle.o
+  CC [M]  net/ipv4/netfilter/iptable_nat.o
+  CC [M]  net/ipv4/netfilter/iptable_raw.o
+  CC [M]  net/ipv4/netfilter/iptable_security.o
+  CC [M]  net/ipv4/netfilter/ipt_ah.o
+  CC [M]  net/ipv4/netfilter/ipt_rpfilter.o
+  CC [M]  net/ipv4/netfilter/ipt_CLUSTERIP.o
+  CC [M]  net/ipv4/netfilter/ipt_ECN.o
+  CC [M]  net/ipv4/netfilter/ipt_MASQUERADE.o
+  CC [M]  net/ipv4/netfilter/ipt_REJECT.o
+  CC [M]  net/ipv4/netfilter/ipt_SYNPROXY.o
+  CC [M]  net/ipv4/netfilter/arp_tables.o
+  CC [M]  net/ipv4/netfilter/arpt_mangle.o
+  CC [M]  net/ipv4/netfilter/arptable_filter.o
+  CC [M]  net/ipv4/netfilter/nf_dup_ipv4.o
+  CC      net/ipv4/tcp_cubic.o
+  CC      net/ipv4/xfrm4_policy.o
+  CC      net/ipv4/xfrm4_state.o
+  CC      net/ipv4/xfrm4_input.o
+  CC      net/ipv4/xfrm4_output.o
+  CC      net/ipv4/xfrm4_protocol.o
+  LD      net/ipv4/built-in.o
+  CC [M]  net/ipv4/ip_tunnel.o
+  CC [M]  net/ipv4/ipip.o
+  CC [M]  net/ipv4/fou.o
+  CC [M]  net/ipv4/gre_demux.o
+  LD [M]  net/ipv4/gre.o
+  CC [M]  net/ipv4/ip_gre.o
+  CC [M]  net/ipv4/udp_tunnel.o
+  CC [M]  net/ipv4/ip_vti.o
+  CC [M]  net/ipv4/ah4.o
+  CC [M]  net/ipv4/esp4.o
+  CC [M]  net/ipv4/ipcomp.o
+  CC [M]  net/ipv4/xfrm4_tunnel.o
+  CC [M]  net/ipv4/xfrm4_mode_beet.o
+  CC [M]  net/ipv4/tunnel4.o
+  CC [M]  net/ipv4/xfrm4_mode_transport.o
+  CC [M]  net/ipv4/xfrm4_mode_tunnel.o
+  CC [M]  net/ipv4/inet_diag.o
+  CC [M]  net/ipv4/tcp_diag.o
+  CC [M]  net/ipv4/udp_diag.o
+
